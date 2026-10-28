@@ -1,5 +1,6 @@
 const { contextBridge, ipcRenderer } = require('electron')
 
 contextBridge.exposeInMainWorld('desktop', {
-  alerta: (ativo) => ipcRenderer.send('alerta', ativo),
+  // dados: null para limpar, ou { titulo, corpo, modo: 'canto' | 'janela' }
+  alerta: (dados) => ipcRenderer.send('alerta', dados),
 })

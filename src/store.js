@@ -15,12 +15,11 @@ export const TIPOS = [
 ]
 
 // SÓ MODO LOCAL (sem Supabase): senhas fixas de teste. Com Supabase, o login usa o Auth do servidor.
-export const SENHAS = {
-  caixa: 'caixa123',
-  cancelamento: 'cancel123',
-  certidoes: 'cert123',
-  financeiro: 'fin123',
-}
+// Com o .env do Supabase preenchido, este objeto fica vazio e as senhas nem entram no instalador.
+const SEM_SERVIDOR = !import.meta.env.VITE_SUPABASE_URL || !import.meta.env.VITE_SUPABASE_ANON_KEY
+export const SENHAS = SEM_SERVIDOR
+  ? { caixa: 'caixa123', cancelamento: 'cancel123', certidoes: 'cert123', financeiro: 'fin123' }
+  : {}
 
 // ---- Persistência (localStorage, sincroniza entre abas do mesmo navegador) --
 const KEY_CFG = 'pp_financeiro_cfg'

@@ -88,7 +88,8 @@ function Aplicacao({ sessao, onSair, tema, alternarTema }) {
         ? <Historico pagamentos={pagamentos} resolver={resolver} />
         : <Atendimento sessao={sessao} dados={dados} />)}
       {tela === 'arquivos' && <Arquivos />}
-      {atual && <PopUp p={atual} restantes={pendentes.length} resolver={resolver} erro={erro} />}
+      {atual && <PopUp p={atual} restantes={pendentes.length} resolver={resolver} erro={erro}
+        estilo={cfg.estilo ?? 'canto'} />}
     </Shell>
   )
 }

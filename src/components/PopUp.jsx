@@ -5,7 +5,7 @@ import { useAgora } from '../hooks.js'
 import { SETORES, brl, hora, duracao } from '../store.js'
 
 // Pop-up persistente: só some quando alguém clica. Toca som e notificação do sistema.
-export default function PopUp({ p, restantes, resolver, erro }) {
+export default function PopUp({ p, restantes, resolver, erro, estilo }) {
   const audioRef = useRef(null)
   const agora = useAgora()
 
@@ -27,14 +27,21 @@ export default function PopUp({ p, restantes, resolver, erro }) {
     return () => clearInterval(t)
   }, [p.id])
 
-  // No app de desktop: traz a janela para frente e pisca na barra enquanto houver pop-up
+  // App de desktop: se estiver em segundo plano (ex.: site do banco), avisa por fora, enquanto houver pop-up:
+  // notificação no canto da tela ('canto') ou janela por cima ('janela'). Ver electron/aviso.cjs
   useEffect(() => {
-    window.desktop?.alerta(true)
-    return () => window.desktop?.alerta(false)
-  }, [p.id])
+    if (!window.desktop) return
+    window.desktop.alerta({
+      titulo: `Pagamento aguardando: ${brl(p.valor)}`,
+      corpo: `${SETORES[p.setor]}${p.operador ? ' · ' + p.operador : ''} · ${p.tipo}. Confira no banco.`,
+      modo: estilo,
+    })
+    return () => window.desktop.alerta(null)
+  }, [p.id, estilo])
 
+  // Navegador (sem o app de desktop): notificação do próprio navegador
   useEffect(() => {
-    if (!('Notification' in window) || Notification.permission !== 'granted') return
+    if (window.desktop || !('Notification' in window) || Notification.permission !== 'granted') return
     const n = new Notification(`${SETORES[p.setor]}${p.operador ? ' · ' + p.operador : ''}`, {
       body: `${p.tipo} — ${brl(p.valor)}\nConfirme no banco.`,
       requireInteraction: true, // fica na tela até clicar

@@ -2,7 +2,7 @@ import { useState } from 'react'
 import Icon from '../components/Icon.jsx'
 import Logo from '../components/Logo.jsx'
 import { REMOTO, entrar } from '../dados.js'
-import { SETORES, OPERADORES_CAIXA } from '../store.js'
+import { SETORES, OPERADORES_CAIXA, SENHAS } from '../store.js'
 
 const ICONE_SETOR = { caixa: 'wallet', cancelamento: 'ban', certidoes: 'award', financeiro: 'shield' }
 const OPCOES = [...Object.entries(SETORES), ['financeiro', 'Financeiro']]
@@ -84,7 +84,7 @@ export default function Login({ onEntrar, tema, alternarTema }) {
             {entrando ? <span className="spinner" /> : 'Entrar'}
           </button>
           {!REMOTO && (
-            <p className="dica">Modo local (sem servidor) · senhas de teste: caixa123, cancel123, cert123, fin123</p>
+            <p className="dica">Modo local (sem servidor) · senhas de teste: {Object.values(SENHAS).join(', ')}</p>
           )}
         </form>
       </section>

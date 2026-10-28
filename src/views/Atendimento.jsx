@@ -3,7 +3,8 @@ import Icon from '../components/Icon.jsx'
 import { StatusPill, Vazio } from '../components/ui.jsx'
 import { useToast } from '../components/Toasts.jsx'
 import { useAgora } from '../hooks.js'
-import { TIPOS, brl, hora, inicioDoDia, duracao } from '../store.js'
+import { SETORES, TIPOS, brl, hora, inicioDoDia, duracao } from '../store.js'
+import { baixarMeusEnvios } from '../relatorios.js'
 
 const ICONE_TIPO = {
   'Título em aberto': 'fileText',
@@ -101,6 +102,10 @@ export default function Atendimento({ sessao, dados }) {
       <section className="card">
         <div className="card-head">
           <h2>Meus envios de hoje</h2>
+          <button className="btn fantasma sm" disabled={!meus.length}
+            onClick={() => baixarMeusEnvios(meus, sessao.operador ?? SETORES[sessao.setor])}>
+            <Icon nome="download" tam={15} /> Baixar relatório
+          </button>
         </div>
         <div className="mini-stats">
           <div><b>{meus.length}</b><span>enviados</span></div>

@@ -1,5 +1,6 @@
 const { app, BrowserWindow, Tray, Menu, ipcMain, nativeImage } = require('electron')
 const path = require('path')
+const criarAviso = require('./aviso.cjs')
 
 const DEV_URL = process.env.DEV_URL // ex.: http://localhost:5173 (npm run desktop:dev)
 let win = null
@@ -13,7 +14,8 @@ app.on('second-instance', () => mostrar())
 function mostrar() {
   if (!win) return
   if (win.isMinimized()) win.restore()
-  win.show()
+  win.show() // reabre também se estava escondido na bandeja
+  win.moveTop()
   win.focus()
 }
 
@@ -28,6 +30,7 @@ function criarJanela() {
     webPreferences: {
       preload: path.join(__dirname, 'preload.cjs'),
       contextIsolation: true,
+      backgroundThrottling: false, // com a janela escondida, o som e o relógio do pop-up continuam
     },
   })
   if (DEV_URL) win.loadURL(DEV_URL)
@@ -57,18 +60,9 @@ function criarBandeja() {
   ]))
 }
 
-// Pop-up de pagamento ativo: traz a janela para frente, fica por cima e pisca na barra
-ipcMain.on('alerta', (_e, ativo) => {
-  if (!win) return
-  if (ativo) {
-    mostrar()
-    win.setAlwaysOnTop(true, 'screen-saver')
-    win.flashFrame(true)
-  } else {
-    win.setAlwaysOnTop(false)
-    win.flashFrame(false)
-  }
-})
+// Pagamento aguardando: notificação no canto da tela ou janela por cima (ver aviso.cjs)
+const aviso = criarAviso({ janela: () => win, mostrar })
+ipcMain.on('alerta', (_e, dados) => aviso.ativar(dados))
 
 app.whenReady().then(() => {
   app.setAppUserModelId('br.com.painelpagamentos') // necessário para notificações no Windows

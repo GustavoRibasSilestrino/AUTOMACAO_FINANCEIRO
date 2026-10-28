@@ -2,6 +2,7 @@ import { useMemo } from 'react'
 import Icon from '../components/Icon.jsx'
 import { Kpi, Switch, Vazio } from '../components/ui.jsx'
 import { useAgora } from '../hooks.js'
+import { baixarRelatorioDoDia } from '../relatorios.js'
 import { SETORES, TIPOS, brl, hora, inicioDoDia, duracao } from '../store.js'
 
 const SEGMENTOS = [
@@ -69,7 +70,12 @@ export default function Painel({ pagamentos, pendentes, resolver, cfg, setCfg, e
         <section className="card span-2">
           <div className="card-head">
             <h2>Fila de conferência</h2>
-            <button className="btn fantasma sm" onClick={() => irPara('pagamentos')}>Ver histórico</button>
+            <div className="acoes">
+              <button className="btn fantasma sm" onClick={() => baixarRelatorioDoDia(pagamentos)}>
+                <Icon nome="download" tam={15} /> Relatório do dia
+              </button>
+              <button className="btn fantasma sm" onClick={() => irPara('pagamentos')}>Ver histórico</button>
+            </div>
           </div>
           {pendentes.length === 0 ? (
             <Vazio icone="checkCircle" titulo="Nada aguardando" texto="Quando um setor informar um valor, ele aparece aqui e em um pop-up." />
@@ -114,8 +120,22 @@ export default function Painel({ pagamentos, pendentes, resolver, cfg, setCfg, e
                 onClick={() => alternarSetor(k)} aria-pressed={cfg.setores.includes(k)}>{v}</button>
             ))}
           </div>
-          {'Notification' in window && Notification.permission === 'denied' && (
-            <p className="dica">As notificações do Windows estão bloqueadas para este app. O pop-up na tela continua funcionando.</p>
+          {window.desktop ? (
+            <>
+              <span className="rotulo" style={{ marginTop: '1.1rem' }}>Quando o app estiver em segundo plano</span>
+              <div className="segmentado" role="group" aria-label="Como avisar">
+                {[['canto', 'Notificação no canto'], ['janela', 'Janela na frente']].map(([k, v]) => (
+                  <button key={k} className={(cfg.estilo ?? 'canto') === k ? 'ativo' : ''}
+                    onClick={() => setCfg({ ...cfg, estilo: k })}>{v}</button>
+                ))}
+              </div>
+              <p className="dica">A notificação aparece no canto inferior direito e se repete a cada minuto até você conferir.
+                Se não aparecer, confira se o Windows está em &quot;Não incomodar&quot; (Assistente de foco).</p>
+            </>
+          ) : (
+            'Notification' in window && Notification.permission === 'denied' && (
+              <p className="dica">As notificações estão bloqueadas neste navegador. O pop-up na tela continua funcionando.</p>
+            )
           )}
         </section>
 

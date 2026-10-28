@@ -1,0 +1,60 @@
+// Relatórios em CSV (ponto-e-vírgula, abre direto no Excel).
+import { SETORES, OPERADORES_CAIXA, TIPOS, STATUS, inicioDoDia, duracao, baixarCsv } from './store.js'
+
+const DIA = 86400000
+const num = (v) => v.toFixed(2).replace('.', ',')
+const soma = (l) => l.reduce((s, p) => s + p.valor, 0)
+const hora = (t) => new Date(t).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })
+const dataBr = (t) => new Date(t).toLocaleDateString('pt-BR')
+const iso = (t) => new Date(t).toISOString().slice(0, 10)
+
+const COLUNAS = ['Qtd', 'Confirmado (R$)', 'Aguardando (R$)', 'Não localizado (R$)', 'Total (R$)']
+const resumo = (rotulo, l) => [
+  rotulo,
+  l.length,
+  ...['confirmado', 'pendente', 'nao_recebido'].map((s) => num(soma(l.filter((p) => p.status === s)))),
+  num(soma(l)),
+]
+const origem = (p) => (p.operador ? `${SETORES[p.setor]} · ${p.operador}` : SETORES[p.setor])
+const tempo = (p) => duracao((p.resolvidoEm ?? Date.now()) - p.criadoEm)
+
+// Fechamento do dia: resumos por setor, atendente do caixa e tipo + detalhe de cada pagamento
+export function baixarRelatorioDoDia(pagamentos, inicio = inicioDoDia()) {
+  const dia = pagamentos.filter((p) => p.criadoEm >= inicio && p.criadoEm < inicio + DIA)
+  const linhas = [
+    [],
+    ['Resumo por setor', ...COLUNAS],
+    ...Object.entries(SETORES).map(([k, v]) => resumo(v, dia.filter((p) => p.setor === k))),
+    resumo('TOTAL', dia),
+    [],
+    ['Caixa por atendente', ...COLUNAS],
+    ...OPERADORES_CAIXA.map((o) => resumo(o, dia.filter((p) => p.setor === 'caixa' && p.operador === o))),
+    [],
+    ['Resumo por tipo', ...COLUNAS],
+    ...TIPOS.map((t) => resumo(t, dia.filter((p) => p.tipo === t))),
+    [],
+    ['Detalhe dos pagamentos'],
+    ['Hora', 'Origem', 'Tipo', 'Valor (R$)', 'Status', 'Conferido às', 'Tempo de conferência'],
+    ...dia.sort((a, b) => a.criadoEm - b.criadoEm).map((p) => [
+      hora(p.criadoEm), origem(p), p.tipo, num(p.valor), STATUS[p.status].rotulo,
+      p.resolvidoEm ? hora(p.resolvidoEm) : '', tempo(p),
+    ]),
+  ]
+  baixarCsv(`fechamento-${iso(inicio)}.csv`, ['Protesto Sorocaba — Fechamento do dia', dataBr(inicio)], linhas)
+}
+
+// Envios do atendente (já filtrados pela tela) com total
+export function baixarMeusEnvios(meus, quem) {
+  baixarCsv(
+    `meus-envios-${iso(Date.now())}.csv`,
+    ['Hora', 'Tipo', 'Valor (R$)', 'Status', 'Conferido às', 'Tempo de conferência'],
+    [
+      ...[...meus].sort((a, b) => a.criadoEm - b.criadoEm).map((p) => [
+        hora(p.criadoEm), p.tipo, num(p.valor), STATUS[p.status].rotulo,
+        p.resolvidoEm ? hora(p.resolvidoEm) : '', tempo(p),
+      ]),
+      [],
+      ['', `Total (${quem})`, num(soma(meus))],
+    ],
+  )
+}

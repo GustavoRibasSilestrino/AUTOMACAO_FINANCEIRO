@@ -88,7 +88,8 @@ O resultado fica em `release/`.
 **Comportamento do app de desktop:**
 - Fechar a janela (X) **só esconde** o app na bandeja do sistema (perto do relógio) — assim o financeiro continua recebendo pop-ups. Para fechar de verdade: clique direito no ícone da bandeja → **Sair**.
 - Clique direito no ícone da bandeja → **Iniciar com o Windows** liga/desliga a abertura automática (recomendado no PC do financeiro).
-- Quando chega um pagamento, a janela **vem para frente, fica por cima de tudo e pisca na barra de tarefas** até alguém clicar em "OK, recebido" ou "Não recebido".
+- Quando chega um pagamento e o app está em segundo plano (ex.: janela do banco), aparece uma **notificação do Windows no canto inferior direito**, que se repete a cada 1 minuto até a conferência. Clicar nela traz o app para a frente, já com o pop-up de confirmação. Se o app já está na frente, só aparece o pop-up dele. No Painel dá para trocar por "Janela na frente" (a janela vem por cima de tudo).
+- **Relatórios (CSV para Excel):** Financeiro > Painel > "Relatório do dia" (fechamento por setor, atendente e tipo, com detalhe); Financeiro > Pagamentos > "Exportar CSV" (lista filtrada); demais setores > "Baixar relatório" (envios do dia).
 - Só abre uma cópia do app por computador.
 
 **Problemas conhecidos / observações:**
@@ -108,6 +109,8 @@ Não é preciso Vercel nem site: o `.exe` é copiado para uma pasta da rede e ca
 2. Botão direito na pasta → **Propriedades → Compartilhamento → Compartilhamento Avançado** → marque **Compartilhar esta pasta**.
 3. Em **Permissões**, remova "Todos" e adicione só as contas que vão instalar, com **Leitura**. Deixe **Controle total** apenas para quem atualiza o instalador.
 4. Anote o caminho de rede: `\\NOME-DO-PC\Instaladores` (o nome do PC está em *Configurações → Sistema → Sobre*).
+
+**ZIP pronto para levar:** `release\Painel-de-Pagamentos-X.Y.Z.zip` contém o instalador e um `LEIA-ME.txt` com as instruções para os usuários. Para refazer: gere o instalador (`npm run dist`), copie o `.exe` e o `LEIA-ME.txt` para uma pasta `Painel de Pagamentos X.Y.Z` e compacte (botão direito > Enviar para > Pasta compactada).
 
 **Colocar/atualizar o instalador:**
 1. No PC de desenvolvimento, com o `.env` do Supabase já preenchido (seção 4): `npm run dist`.
@@ -147,6 +150,8 @@ O que falta é só **você criar o projeto no Supabase** (conta sua) e preencher
 7. **Preencher o `.env`:** copie `.env.example` para `.env` e cole os valores. (O `.env` não vai para o Git. Em outro PC de desenvolvimento, refaça este passo.)
 8. **Testar:** `npm run dev`. A tela de login **não** deve mostrar "modo local". Veja o checklist abaixo.
 9. **Gerar o instalador:** `npm run dist` (as chaves são embutidas **na hora do build**, então o `.env` precisa estar preenchido antes). Instale o novo `.exe` em cada PC. As chaves `anon` são públicas por definição; quem protege os dados são as regras do passo 2 e as senhas.
+
+> **Testando em um só computador:** o login fica salvo no navegador, então dois logins na **mesma janela/perfil** se atrapalham (o segundo derruba o primeiro). Use uma **janela anônima** (Ctrl+Shift+N) ou outro navegador para o segundo usuário. Com o app instalado e uma conta por PC isso não acontece.
 
 ### Checklist de teste com 2 computadores
 - [ ] PC A entra como **Financeiro**, deixa "Ativado" e aceita as notificações.
