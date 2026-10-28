@@ -1,0 +1,8 @@
+# O site é compilado no próprio Vercel; instaladores e dependências locais não sobem.
+release
+node_modules
+dist
+.env
+.git
+electron
+build
