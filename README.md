@@ -99,6 +99,30 @@ O resultado fica em `release/`.
 
 ---
 
+## 3.2 Distribuir o instalador por pasta compartilhada
+
+Não é preciso Vercel nem site: o `.exe` é copiado para uma pasta da rede e cada PC instala a partir dela.
+
+**Montar a pasta (uma vez, no PC que fica ligado — ex.: o do financeiro):**
+1. Crie a pasta `C:\Instaladores`.
+2. Botão direito na pasta → **Propriedades → Compartilhamento → Compartilhamento Avançado** → marque **Compartilhar esta pasta**.
+3. Em **Permissões**, remova "Todos" e adicione só as contas que vão instalar, com **Leitura**. Deixe **Controle total** apenas para quem atualiza o instalador.
+4. Anote o caminho de rede: `\\NOME-DO-PC\Instaladores` (o nome do PC está em *Configurações → Sistema → Sobre*).
+
+**Colocar/atualizar o instalador:**
+1. No PC de desenvolvimento, com o `.env` do Supabase já preenchido (seção 4): `npm run dist`.
+2. Copie `release\Painel de Pagamentos Setup X.Y.Z.exe` para a pasta compartilhada. Ao atualizar, aumente `version` no `package.json` antes de gerar, para o nome do arquivo mostrar qual é a versão nova, e apague a versão antiga da pasta.
+
+**Instalar em cada PC:**
+1. No Explorador de Arquivos, digite `\\NOME-DO-PC\Instaladores` na barra de endereço (se pedir usuário e senha, use uma conta do PC que compartilha).
+2. Dê dois cliques no `.exe`. A instalação é de um clique, sem administrador, e cria o atalho na Área de Trabalho.
+3. Se aparecer "O Windows protegeu o computador": **Mais informações → Executar assim mesmo** (o instalador não é assinado).
+4. Para atualizar, rode o `.exe` novo por cima: as configurações do app (como setores do pop-up) são mantidas.
+
+**Cuidados:** o PC que compartilha precisa estar ligado e na mesma rede; se a pasta não abrir, confira se a **Descoberta de rede** está ativada. Não instale o primeiro `.exe` gerado antes do `.env`: ele roda em modo local, sem se conectar ao servidor.
+
+---
+
 ## 4. Ligar os computadores (Supabase)
 
 **O código já está pronto.** Sem o arquivo `.env` o app roda em *modo local* (como antes). Com o `.env` preenchido, ele passa a usar o Supabase: login de verdade, pagamentos num banco central e pop-up em tempo real entre PCs diferentes.
