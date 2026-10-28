@@ -1,0 +1,56 @@
+{
+  "name": "painel-pagamentos",
+  "private": true,
+  "version": "0.1.0",
+  "description": "Painel de Pagamentos - caixa e financeiro",
+  "author": "Gustavo Ribas",
+  "type": "module",
+  "main": "electron/main.cjs",
+  "scripts": {
+    "dev": "vite --host",
+    "build": "vite build",
+    "preview": "vite preview --host",
+    "desktop": "vite build && electron .",
+    "desktop:dev": "set DEV_URL=http://localhost:5173&& electron .",
+    "dist": "vite build && electron-builder --win"
+  },
+  "dependencies": {
+    "@supabase/supabase-js": "^2.118.0",
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1"
+  },
+  "devDependencies": {
+    "@vitejs/plugin-react": "^4.3.1",
+    "electron": "^33.4.11",
+    "electron-builder": "^25.1.8",
+    "vite": "^5.4.0"
+  },
+  "build": {
+    "appId": "br.com.painelpagamentos",
+    "productName": "Painel de Pagamentos",
+    "directories": {
+      "output": "release"
+    },
+    "files": [
+      "dist/**",
+      "electron/**",
+      "build/icon.png",
+      "package.json"
+    ],
+    "win": {
+      "target": "nsis",
+      "icon": "build/icon.ico",
+      "signAndEditExecutable": false
+    },
+    "nsis": {
+      "oneClick": true,
+      "perMachine": false,
+      "createDesktopShortcut": true,
+      "createStartMenuShortcut": true,
+      "shortcutName": "Painel de Pagamentos",
+      "installerIcon": "build/icon.ico",
+      "uninstallerIcon": "build/icon.ico"
+    },
+    "afterPack": "build/afterPack.cjs"
+  }
+}

@@ -1,0 +1,244 @@
+# Painel de Pagamentos — Protótipo + Roteiro
+
+Sistema para o **caixa/atendimento** informar valores recebidos e o **financeiro** conferir no banco, com pop-up persistente.
+
+Este documento serve para retomar o trabalho em **qualquer computador**.
+
+---
+
+## 1. Requisitos do sistema (levantados na conversa)
+
+- [ ] **Pesquisa de arquivos** (busca por nome, filtro por setor).
+- [ ] **"OK" do financeiro** para pagamentos.
+- [ ] O caixa **digita o valor recebido**; o financeiro recebe **pop-up no PC**, para conferir no banco se o valor entrou ou não.
+- [ ] Separação por **setores**: Caixa, Cancelamento, Certidões.
+- [ ] **Só o financeiro** recebe pop-ups: entra no app com a **senha do setor financeiro** e precisa estar **configurado para receber pop-up**.
+- [ ] No setor **Caixa** (atendimento físico) é possível **escolher o usuário** — 3 perfis: **Biga**, **Particular**, **Renata**.
+- [ ] O atendente informa o tipo: **título em aberto**, **certidão**, **taxa de cancelamento** ou **custas da CPFL**.
+- [ ] O pop-up **fica aparecendo até alguém clicar** na notificação.
+
+---
+
+## 2. O que o protótipo já faz
+
+| Requisito | Situação no protótipo |
+|---|---|
+| Login por setor + senha | Feito (senhas fixas de teste) |
+| Caixa escolhe Biga / Particular / Renata | Feito |
+| Tipo de pagamento (4 opções) + valor | Feito |
+| Pop-up para o financeiro, persistente até clicar | Feito (modal + som repetido + notificação do sistema com `requireInteraction`) |
+| Financeiro escolhe se recebe pop-up e de quais setores | Feito (configuração salva por computador) |
+| Botões "OK, recebido" / "Não recebido" | Feito |
+| Histórico e status para quem enviou | Feito (com cronômetro e aviso na tela quando o financeiro responde) |
+| Painel do financeiro | Feito: indicadores do dia, fila de conferência, gráficos por setor e por tipo |
+| Histórico com filtros e exportação | Feito: busca, setor, status, período (hoje/7 dias/tudo) e **CSV para Excel** |
+| Identidade visual Protesto Sorocaba | Feito: azul-marinho da logo, tema claro/escuro, responsivo |
+| Pesquisa de arquivos | Feito com dados de exemplo (`src/arquivos.js`); atalho **Ctrl+K** em qualquer tela |
+| Aplicativo com ícone na área de trabalho (instalador `.exe`) | Feito — ver seção 3.1 |
+| Funcionar entre computadores diferentes | Código pronto (Supabase); falta criar o projeto e preencher o `.env` — ver seção 4 |
+
+> **Importante:** sem o arquivo `.env` (seção 4) o app roda em *modo local*: os dados ficam no `localStorage` do navegador/app e **não** passam de um PC para outro. Serve para validar telas e fluxo.
+
+Senhas de teste: Caixa `caixa123` · Cancelamento `cancel123` · Certidões `cert123` · Financeiro `fin123`
+
+---
+
+## 3. Rodar o protótipo (em qualquer PC)
+
+Pré-requisito: [Node.js](https://nodejs.org) 18+ instalado.
+
+```bash
+cd AUTOMAÇÃO_FINANCEIRO
+npm install
+npm run dev
+```
+
+Abra `http://localhost:5173`.
+
+### Testando o fluxo completo
+1. **Aba 1:** entre como **Financeiro** (`fin123`). Deixe "Ativado" marcado e aceite a permissão de notificações.
+2. **Aba 2** (mesmo navegador): entre como **Caixa → Renata** (`caixa123`), escolha o tipo, digite um valor e envie.
+3. Volte à aba 1: o pop-up aparece, com som, e **não some** até clicar em "OK, recebido" ou "Não recebido".
+4. Na aba 2, o status do envio muda sozinho.
+5. Desmarque setores na configuração do financeiro para ver o filtro por setor.
+
+### Levar para outro computador
+- Copie a pasta **sem** `node_modules`, `dist` e `release` (ou use Git, seção 6) e rode `npm install` no novo PC.
+
+---
+
+## 3.1 Aplicativo de desktop (ícone na área de trabalho)
+
+O projeto usa **Electron**: é o mesmo React, empacotado como programa do Windows.
+
+**Para instalar em um PC (sem precisar de Node):**
+1. Pegue o arquivo `release/Painel de Pagamentos Setup 0.1.0.exe` (gerado no passo abaixo).
+2. Copie para o PC (pen drive / rede) e dê dois cliques. A instalação é de um clique, **sem precisar de administrador**, e cria o **atalho na Área de Trabalho** e no Menu Iniciar.
+3. O Windows pode mostrar "Windows protegeu seu computador" (o instalador não é assinado digitalmente): clique em **Mais informações → Executar assim mesmo**.
+
+**Para gerar o instalador** (no PC de desenvolvimento, com Node):
+```bash
+npm install
+npm run dist
+```
+O resultado fica em `release/`.
+
+**Testar sem instalar:** `npm run desktop` (compila e abre o app direto).
+
+**Comportamento do app de desktop:**
+- Fechar a janela (X) **só esconde** o app na bandeja do sistema (perto do relógio) — assim o financeiro continua recebendo pop-ups. Para fechar de verdade: clique direito no ícone da bandeja → **Sair**.
+- Clique direito no ícone da bandeja → **Iniciar com o Windows** liga/desliga a abertura automática (recomendado no PC do financeiro).
+- Quando chega um pagamento, a janela **vem para frente, fica por cima de tudo e pisca na barra de tarefas** até alguém clicar em "OK, recebido" ou "Não recebido".
+- Só abre uma cópia do app por computador.
+
+**Problemas conhecidos / observações:**
+- No Windows, o `electron-builder` falha ao extrair a ferramenta `winCodeSign` ("Cannot create symbolic link"). O projeto já contorna isso (`signAndEditExecutable: false` + `build/afterPack.cjs`, que coloca o ícone no `.exe`). Se o erro voltar, ative o **Modo de desenvolvedor** do Windows ou rode o terminal como administrador.
+- Para o instalador sair **sem o aviso do Windows**, é preciso um certificado de assinatura de código (pago).
+- O ícone atual é provisório (`build/icon.png` / `build/icon.ico`); troque por um ícone da empresa (PNG 256×256 + ICO).
+- **Os dados só passam entre PCs depois que a seção 4 for feita** (Supabase). Um instalador gerado antes disso roda em modo local.
+
+---
+
+## 4. Ligar os computadores (Supabase)
+
+**O código já está pronto.** Sem o arquivo `.env` o app roda em *modo local* (como antes). Com o `.env` preenchido, ele passa a usar o Supabase: login de verdade, pagamentos num banco central e pop-up em tempo real entre PCs diferentes.
+
+O que falta é só **você criar o projeto no Supabase** (conta sua) e preencher as chaves:
+
+1. **Criar o projeto** em [supabase.com](https://supabase.com) (o plano gratuito basta para começar). Região sugerida: *South America (São Paulo)*. Guarde a senha do banco.
+2. **Criar as tabelas e regras:** *SQL Editor → New query* → cole todo o conteúdo de `supabase/migrations/20261028120000_painel_pagamentos.sql` → **Run**.
+3. **Desligar o cadastro aberto:** *Authentication → Sign In / Providers* → desmarque **Allow new users to sign up**. (Importante: senão qualquer pessoa com a chave pública poderia criar conta.)
+4. **Criar os 4 usuários de setor:** *Authentication → Users → Add user → Create new user*, marcando **Auto Confirm User**. Uma conta por setor, e a senha é a "senha do setor":
+
+   | E-mail | Setor |
+   |---|---|
+   | `caixa@painel.app` | Caixa (Biga/Particular/Renata são escolhidos dentro do app) |
+   | `cancelamento@painel.app` | Cancelamento |
+   | `certidoes@painel.app` | Certidões |
+   | `financeiro@painel.app` | Financeiro (recebe os pop-ups) |
+
+   Use senhas fortes e diferentes entre si. O domínio `painel.app` é só um nome (não precisa existir); para mudar, altere também `supabase/criar_perfis.sql` e `VITE_EMAIL_DOMAIN`.
+5. **Vincular usuário ↔ setor:** *SQL Editor* → cole `supabase/criar_perfis.sql` → **Run**. Deve listar **4 linhas**.
+6. **Copiar as chaves:** *Project Settings → API* → copie a **Project URL** e a chave **anon / publishable**. **Nunca** use a `service_role`.
+7. **Preencher o `.env`:** copie `.env.example` para `.env` e cole os valores. (O `.env` não vai para o Git. Em outro PC de desenvolvimento, refaça este passo.)
+8. **Testar:** `npm run dev`. A tela de login **não** deve mostrar "modo local". Veja o checklist abaixo.
+9. **Gerar o instalador:** `npm run dist` (as chaves são embutidas **na hora do build**, então o `.env` precisa estar preenchido antes). Instale o novo `.exe` em cada PC. As chaves `anon` são públicas por definição; quem protege os dados são as regras do passo 2 e as senhas.
+
+### Checklist de teste com 2 computadores
+- [ ] PC A entra como **Financeiro**, deixa "Ativado" e aceita as notificações.
+- [ ] PC B entra como **Caixa → Renata** e envia R$ 10,00 (Custas CPFL).
+- [ ] No PC A o pop-up aparece em poucos segundos, com som, e **não some** até clicar.
+- [ ] Clicar "OK, recebido" no PC A: o PC B mostra "Confirmado" sozinho.
+- [ ] Com **dois** PCs no Financeiro: clicar OK em um faz o pop-up sumir no outro.
+- [ ] Fechar o app no PC A, enviar pelo PC B, reabrir o PC A: o pagamento pendente aparece (nada se perde).
+- [ ] Desligar o Wi-Fi do PC A por 1 min e religar: volta a receber sem precisar reabrir.
+- [ ] Entrar como Cancelamento: **não** enxerga pagamentos do Caixa.
+
+### Regras de segurança (aplicadas no servidor, não só na tela)
+- Cada setor só **cria** pagamentos do **próprio** setor e só **vê** os próprios.
+- Só o **Financeiro** vê todos e só ele **confirma**; só o que está pendente; uma vez confirmado, não muda mais.
+- Ninguém **apaga** nem **altera valor/tipo/setor** depois de criado.
+- Quem confirmou e quando é gravado pelo **servidor** (`resolvido_por`, `resolvido_em`).
+- No Caixa o atendente tem de ser Biga, Particular ou Renata; nos outros setores não há atendente.
+- Usuário sem perfil não enxerga nada. O visitante sem login não lê nada.
+
+### O que foi e o que NÃO foi testado
+- ✅ O SQL (tabelas, regras, permissões) foi executado num Postgres em memória (PGlite) simulando o `auth.uid()` do Supabase: **29 testes de regras de acesso, todos passando** (isso achou e corrigiu um bug: pagamento do Caixa sem atendente passava).
+- ✅ O app em modo local foi testado no navegador (login, envio, valor `1.234,56`, pop-up persistente, confirmação).
+- ⚠️ **Não testado contra um Supabase real:** login pelo Auth, tempo real (`postgres_changes`) e a configuração do projeto. O código segue a API oficial do `supabase-js`, mas rode o checklist acima antes de usar de verdade. Se algo falhar, a mensagem de erro aparece na tela.
+
+### Problemas comuns
+| Mensagem | Causa provável |
+|---|---|
+| "Senha incorreta." | Senha errada, ou e-mail do usuário diferente de `setor@VITE_EMAIL_DOMAIN` |
+| "Usuário sem perfil de setor…" | Faltou rodar `supabase/criar_perfis.sql` (passo 5) |
+| "Sem conexão com o servidor." | PC sem internet, ou `VITE_SUPABASE_URL` errada |
+| Pop-up não chega em tempo real, mas aparece em até 30 s | Tabela fora da publicação `supabase_realtime` (*Database → Publications*); o app recarrega a cada 30 s como rede de segurança |
+| App ainda mostra "modo local" | `.env` vazio/ausente na hora do `npm run dev` ou `npm run dist` |
+
+### Limites atuais
+- O Financeiro usa **uma conta compartilhada** (a confirmação grava essa conta, não a pessoa). Para saber *qual pessoa* confirmou, o próximo passo é uma conta por pessoa do financeiro (ver perguntas em aberto).
+- A pesquisa de arquivos busca na tabela `arquivos` (hoje só com 8 exemplos). Falta **indexar os arquivos reais** (e, se quiser, guardá-los no Supabase Storage). Isso depende de onde estão hoje (pasta de rede, Drive…).
+- Atualizar o app = instalar o novo `.exe` em cada PC (dá para automatizar depois com `electron-updater`).
+
+### Antes de usar de verdade
+- [ ] Senhas fortes nos 4 usuários e cadastro aberto **desligado** (passo 3).
+- [ ] Rodar o checklist de 2 computadores acima.
+- [ ] Backup: o plano gratuito do Supabase não tem backup automático; exporte periodicamente.
+- [ ] Decidir se "não recebido" deve avisar o caixa de volta (hoje só muda o status na lista dele).
+- [ ] Apagar os 8 arquivos de exemplo quando indexar os reais.
+
+**Alternativa sem internet** (rede local apenas): um servidor Node + WebSocket em um PC da empresa, com o mesmo modelo de dados.
+
+---
+
+## 5. Estrutura do código
+
+```
+index.html            entrada
+electron/main.cjs     app de desktop: janela, bandeja, janela por cima ao chegar pop-up
+electron/preload.cjs  ponte segura entre o React e o Electron (window.desktop.alerta)
+build/                ícone e script que embute o ícone no .exe
+src/main.jsx          monta o React
+src/dados.js          camada de dados: Supabase (login, pagamentos em tempo real, arquivos) ou modo local
+src/supabase.js       cliente Supabase (lê o .env)
+supabase/             SQL: migração (tabelas + regras) e criar_perfis.sql
+.env.example          modelo das chaves (copiar para .env)
+src/App.jsx           sessão, dados compartilhados, navegação e pop-up do financeiro
+src/views/            telas: Login, Atendimento (caixa/cancelamento/certidões), Painel e Historico (financeiro), Arquivos
+src/components/       Shell (menu lateral), PopUp, Logo, Icon, Toasts (avisos), ui (KPI, status, switch)
+src/hooks.js          relógio dos cronômetros e tema claro/escuro
+src/store.js          constantes (setores, operadores, tipos), formatação, exportação CSV
+src/arquivos.js       dados de exemplo da pesquisa de arquivos (modo local)
+src/styles.css        design system: cores da marca, tema escuro, animações, responsivo
+build/make-icon.cjs   gera o ícone do app (npx electron build/make-icon.cjs)
+```
+
+Identidade visual (onde ajustar):
+- **Cores da marca:** variáveis no topo de `src/styles.css` (`--marinho`, `--dourado`, tema escuro em `:root[data-tema='dark']`).
+- **Logo:** `src/components/Logo.jsx` é uma recriação em texto/CSS da logo (nítida em qualquer tamanho). Para usar o arquivo de imagem oficial (idealmente SVG ou PNG em alta resolução), troque o conteúdo desse componente por um `<img>`.
+- **Ícone do app (atalho/instalador):** hoje é um monograma "PS" provisório. Para usar o da empresa, substitua `build/icon.png` e `build/icon.ico` e rode `npm run dist`.
+- **Fontes:** o app usa as fontes do Windows (Segoe UI) e Georgia/Palatino na logo, para funcionar sem internet.
+
+Onde mexer para ajustar regras:
+- Operadores do caixa / tipos de pagamento: `src/store.js` **e** o SQL (as regras também valem no servidor)
+- Aparência e comportamento do pop-up: `PopUp` em `src/App.jsx`
+- Intervalo do som (4 s): `setInterval(beep, 4000)` em `PopUp`
+
+---
+
+## 6. Trabalhando em mais de um computador
+
+Recomendado usar **Git + GitHub** (repositório privado):
+
+```bash
+# no PC atual, dentro da pasta do projeto
+git init
+git add .
+git commit -m "Protótipo painel de pagamentos"
+git branch -M main
+git remote add origin https://github.com/SEU_USUARIO/painel-pagamentos.git
+git push -u origin main
+```
+
+```bash
+# em outro PC
+git clone https://github.com/SEU_USUARIO/painel-pagamentos.git
+cd painel-pagamentos
+npm install
+npm run dev
+```
+
+Antes de começar a mexer em qualquer PC: `git pull`. Ao terminar: `git add . && git commit -m "..." && git push`.
+
+> O `.gitignore` já exclui `node_modules` e `dist`. Nunca suba arquivos `.env` com chaves.
+
+---
+
+## 7. Perguntas em aberto
+
+1. O financeiro deve ter **mais de um usuário** (cada um com senha) ou uma senha única do setor?
+2. Os setores Cancelamento e Certidões também terão **vários atendentes** como o Caixa?
+3. Se dois do financeiro estiverem logados, o pop-up aparece para **ambos** e o primeiro clique resolve para todos? (protótipo: sim)
+4. Os arquivos pesquisados já existem em algum lugar (pasta de rede, Drive)? Isso define como indexar.
+5. Quer relatório/fechamento diário por setor e atendente?
