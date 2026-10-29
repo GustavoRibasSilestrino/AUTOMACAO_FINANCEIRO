@@ -6,13 +6,14 @@ Este documento serve para retomar o trabalho em **qualquer computador**.
 
 - **Código:** https://github.com/GustavoRibasSilestrino/AUTOMACAO_FINANCEIRO (público; nunca commitar o `.env`)
 - **Versão web:** https://automacao-financeiro.vercel.app (publica sozinha a cada envio para a `main`)
-- **Versão atual:** 0.4.3
+- **Versão atual:** 0.4.4
 
 ---
 
 ## 0. Onde paramos (28/10/2026)
 
 **Pronto e no ar**
+- **v0.4.4:** fonte **Poppins** em todo o app (embutida, funciona sem internet; a logo mantém a letra serifada da marca); o ponteiro do mouse é **seta** nos textos (mãozinha só nos botões e cursor de digitação só nos campos); ajustes de layout para a fonte mais larga.
 - **v0.4.2:** usuários do **Financeiro**: Carlos, Adriana e Gilmara (escolhidos ao entrar; o nome de quem conferiu fica gravado em cada pagamento, aparece no histórico e nos CSV); **olhinho** para ver a senha no login. Exige a migração 4 (`20261029180000_conferido_por.sql`).
 - **v0.4.1:** o **login não é mais lembrado**: ao fechar o app (ou a aba, na versão web) é preciso entrar de novo. No app de desktop, o X da janela **encerra** o programa nos setores Caixa, Cancelamento e Certidões; só o **Financeiro** continua rodando escondido perto do relógio (para receber avisos) e perde o login ao usar "Sair" no ícone da bandeja.
 - **v0.4.0 (29/10/2026):** nome do **pagador obrigatório** em todos os perfis; **tipos por setor** (Certidões só certidão, Cancelamento só taxa de cancelamento, Caixa os 4); **atendentes** Caixa = Biga, Particular, Renata / Cancelamento = Murilo, Luís / Certidões = Depósitos; aba **Arquivos** = um arquivo de pagamentos por dia, só do perfil (Caixa: do atendente; Cancelamento/Certidões: do setor; Financeiro: todos); soma por atendente; **visual novo** (menu recolhível, painel em blocos, gráficos, celular); assinatura **dev ribas**. Exige a migração 3 no Supabase.

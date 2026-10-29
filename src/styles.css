@@ -28,7 +28,7 @@
   --sombra-forte: 0 2px 4px rgba(14, 23, 54, .06), 0 24px 60px -20px rgba(14, 23, 54, .3);
   --anel: 0 0 0 4px color-mix(in srgb, var(--primario) 18%, transparent);
 
-  --fonte: 'Segoe UI Variable Text', 'Segoe UI', system-ui, -apple-system, 'Helvetica Neue', Arial, sans-serif;
+  --fonte: 'Poppins', 'Segoe UI', system-ui, -apple-system, 'Helvetica Neue', Arial, sans-serif;
   --serifa: 'Cinzel', 'Trajan Pro', 'Palatino Linotype', Georgia, 'Times New Roman', serif;
   color-scheme: light;
 }
@@ -65,6 +65,12 @@ body {
   -webkit-font-smoothing: antialiased;
 }
 h1, h2, h3, p { margin: 0; }
+/* Ponteiro: seta em todo o app (letras, textos, cartões); mão só nos botões e controles clicáveis; cursor de digitação só nos campos */
+html, body, #root, * { cursor: default; }
+button, button *, select, summary, [role='radio'], [role='radio'] *, [role='switch'], [role='switch'] *, label[for], .chip, .nav-item, .setor-card, .tipo-card { cursor: pointer; }
+button:disabled, button:disabled * { cursor: not-allowed; }
+input:not([type='checkbox']):not([type='radio']), textarea { cursor: text; }
+button:disabled { cursor: not-allowed; }
 h2 { font-size: 1.05rem; font-weight: 650; letter-spacing: -.01em; }
 small { color: var(--suave); font-size: .8rem; }
 button { font: inherit; color: inherit; cursor: pointer; }
@@ -340,7 +346,8 @@ kbd { font: inherit; font-size: .68rem; padding: .08rem .42rem; border-radius: 6
 .resumo-filtro { margin: 1rem 0 .7rem; color: var(--suave); font-size: .86rem; }
 .resumo-filtro b { color: var(--texto); }
 .tabela-wrap { overflow-x: auto; margin: 0 -.35rem; padding: 0 .35rem; }
-.tabela { width: 100%; border-collapse: collapse; font-size: .88rem; }
+.tabela { width: 100%; border-collapse: collapse; font-size: .82rem; }
+.tabela .pill { font-size: .7rem; padding: .2rem .5rem; }
 .tabela th { position: sticky; top: 0; text-align: left; font-size: .72rem; letter-spacing: .05em; text-transform: uppercase; color: var(--suave); font-weight: 700; padding: .65rem .75rem; border-bottom: 1px solid var(--borda); white-space: nowrap; background: var(--superficie); }
 .tabela td { padding: .75rem; border-bottom: 1px solid var(--borda); white-space: nowrap; vertical-align: middle; }
 .tabela tbody tr { transition: background .12s; }
@@ -348,7 +355,7 @@ kbd { font: inherit; font-size: .68rem; padding: .08rem .42rem; border-radius: 6
 .tabela tr.cancelado td { opacity: .55; }
 .tabela .num { text-align: right; }
 .celula-pagador { display: inline-flex; align-items: center; gap: .65rem; }
-.celula-pagador strong { max-width: 190px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.celula-pagador strong { max-width: 150px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 @media (min-width: 761px) {
   .tabela td { padding: .7rem .6rem; }
   .tabela td .operador { display: block; margin: .15rem 0 0; }
@@ -358,8 +365,9 @@ kbd { font: inherit; font-size: .68rem; padding: .08rem .42rem; border-radius: 6
 .acoes-td .acoes { justify-content: flex-end; flex-wrap: nowrap; }
 
 /* ---------- Arquivos ---------- */
-.arq-grid { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 1rem; }
-.arq-card { display: grid; gap: .75rem; padding: 1rem 1.1rem; border: 1px solid var(--borda); border-radius: 16px; background: var(--superficie); transition: border-color .15s, transform .15s, box-shadow .15s; }
+.arq-grid { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(auto-fill, minmax(min(320px, 100%), 1fr)); gap: 1rem; }
+.arq-topo .grow { min-width: 0; }
+.arq-card { min-width: 0; display: grid; grid-template-columns: minmax(0, 1fr); gap: .75rem; padding: 1rem 1.1rem; border: 1px solid var(--borda); border-radius: 16px; background: var(--superficie); transition: border-color .15s, transform .15s, box-shadow .15s; }
 .arq-card:hover { border-color: color-mix(in srgb, var(--primario) 45%, var(--borda)); transform: translateY(-2px); box-shadow: var(--sombra); }
 .arq-topo { display: flex; align-items: center; gap: .8rem; }
 .arq-total { font-size: 1.1rem; letter-spacing: -.02em; }
@@ -498,4 +506,9 @@ kbd { font: inherit; font-size: .68rem; padding: .08rem .42rem; border-radius: 6
   .tipos { grid-template-columns: 1fr; }
   .atendente select { max-width: 96px; }
   .kpis { grid-template-columns: 1fr; }
+}
+
+/* Telas médias: a coluna "Quando" do histórico some para a tabela caber (o horário continua nos relatórios) */
+@media (min-width: 761px) and (max-width: 1280px) {
+  .tabela th:nth-child(6), .tabela td:nth-child(6) { display: none; }
 }
