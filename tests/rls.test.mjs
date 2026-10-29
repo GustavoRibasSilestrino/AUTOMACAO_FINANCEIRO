@@ -187,3 +187,22 @@ test('arquivos: logado lê e busca; ninguém escreve', async () => {
   assert.equal(await contar("select count(*) n from arquivos where nome ilike '%cpfl%'"), 1)
   await assert.rejects(db.query("insert into arquivos(nome,setor) values ('x','caixa')"))
 })
+
+test('conferido_por: só Carlos/Adriana/Gilmara e só ao conferir; o setor não preenche', async () => {
+  await como(U.caixa)
+  const a = await inserir('caixa', 'Biga', 'Certidão', 21)
+  const b = await inserir('caixa', 'Biga', 'Certidão', 22)
+  await assert.rejects(db.query(`update pagamentos set status='cancelado', conferido_por='Carlos' where id='${a}'`),
+    'setor não registra quem conferiu')
+  await como(U.financeiro)
+  await assert.rejects(db.query(`update pagamentos set status='confirmado', conferido_por='Fulano' where id='${a}'`), 'nome fora da lista')
+  await assert.rejects(db.query(`update pagamentos set conferido_por='Carlos' where id='${a}'`), 'sem conferir (continua pendente)')
+  assert.equal(await atualizar(`update pagamentos set status='confirmado', conferido_por='Adriana' where id='${a}' returning id`), 1)
+  assert.equal(await atualizar(
+    `update pagamentos set status='divergente', valor_conferido=10, conferido_por='Gilmara' where id='${b}' returning id`), 1)
+  const r = (await db.query(`select conferido_por from pagamentos where id in ('${a}','${b}') order by valor`)).rows.map((x) => x.conferido_por)
+  assert.deepEqual(r, ['Adriana', 'Gilmara'])
+  await como(U.caixa)
+  assert.equal((await db.query(`select conferido_por from pagamentos where id='${a}'`)).rows[0].conferido_por, 'Adriana',
+    'o setor vê quem conferiu')
+})

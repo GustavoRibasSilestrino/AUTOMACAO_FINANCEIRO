@@ -11,6 +11,7 @@ export const OPERADORES = {
   caixa: ['Biga', 'Particular', 'Renata'],
   cancelamento: ['Murilo', 'Luís'],
   certidoes: ['Depósitos'],
+  financeiro: ['Carlos', 'Adriana', 'Gilmara'], // quem confere; fica registrado em cada pagamento conferido
 }
 export const TIPOS = [
   'Título em aberto',

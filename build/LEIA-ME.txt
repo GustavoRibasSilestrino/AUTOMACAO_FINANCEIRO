@@ -17,9 +17,11 @@ PRIMEIRO ACESSO
     Caixa: Biga, Particular ou Renata
     Cancelamento: Murilo ou Luís
     Certidões: Depósitos
+    Financeiro: Carlos, Adriana ou Gilmara (fica registrado quem conferiu)
   Para trocar de atendente depois, use a caixa "Atendente" no topo da
   tela (não precisa sair).
-- Digite a senha do setor (quem administra o sistema informa).
+- Digite a senha do setor (quem administra o sistema informa). O olhinho
+  ao lado do campo mostra ou esconde a senha que você digita.
 
 COMO USAR
 - CAIXA / CANCELAMENTO / CERTIDÕES:

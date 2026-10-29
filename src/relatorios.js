@@ -41,10 +41,10 @@ export function baixarRelatorioDoDia(pagamentos, inicio = inicioDoDia()) {
     ...TIPOS.map((t) => resumo(t, ativos.filter((p) => p.tipo === t))),
     [],
     ['Detalhe dos pagamentos'],
-    ['Hora', 'Pagador', 'Origem', 'Tipo', 'Valor informado (R$)', 'Valor no banco (R$)', 'Status', 'Conferido às', 'Tempo de conferência'],
+    ['Hora', 'Pagador', 'Origem', 'Tipo', 'Valor informado (R$)', 'Valor no banco (R$)', 'Status', 'Conferido às', 'Tempo de conferência', 'Conferido por'],
     ...dia.sort((a, b) => a.criadoEm - b.criadoEm).map((p) => [
       hora(p.criadoEm), p.pagador, origem(p), p.tipo, num(p.valor), noBanco(p), STATUS[p.status].rotulo,
-      p.resolvidoEm ? hora(p.resolvidoEm) : '', tempo(p),
+      p.resolvidoEm ? hora(p.resolvidoEm) : '', tempo(p), p.conferidoPor ?? '',
     ]),
   ]
   baixarCsv(`fechamento-${iso(inicio)}.csv`, ['Protesto Sorocaba — Fechamento do dia', dataBr(inicio)], linhas)

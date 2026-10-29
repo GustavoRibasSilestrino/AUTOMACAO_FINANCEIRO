@@ -8,11 +8,11 @@ export const diaDe = (t) => new Date(t).toLocaleDateString('en-CA') // 2026-10-2
 export const diaBr = (dia) => dia.split('-').reverse().join('/')
 const limpo = (s) => s.normalize('NFD').replace(/[̀-ͯ]/g, '').replace(/\s+/g, '-')
 
-const CABECALHO = ['Hora', 'Pagador', 'Atendente', 'Tipo', 'Valor informado (R$)', 'Valor no banco (R$)', 'Status', 'Conferido às', 'Tempo de conferência']
+const CABECALHO = ['Hora', 'Pagador', 'Atendente', 'Tipo', 'Valor informado (R$)', 'Valor no banco (R$)', 'Status', 'Conferido às', 'Tempo de conferência', 'Conferido por']
 const linha = (p) => [
   hora(p.criadoEm), p.pagador, p.operador ?? '', p.tipo, num(p.valor),
   p.valorConferido == null ? '' : num(p.valorConferido), STATUS[p.status].rotulo,
-  p.resolvidoEm ? hora(p.resolvidoEm) : '', duracao((p.resolvidoEm ?? Date.now()) - p.criadoEm),
+  p.resolvidoEm ? hora(p.resolvidoEm) : '', duracao((p.resolvidoEm ?? Date.now()) - p.criadoEm), p.conferidoPor ?? '',
 ]
 const somaAtivos = (itens) => itens.filter((p) => p.status !== 'cancelado').reduce((s, p) => s + p.valor, 0)
 

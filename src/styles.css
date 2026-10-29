@@ -112,7 +112,10 @@ kbd { font: inherit; font-size: .68rem; padding: .08rem .42rem; border-radius: 6
 .input:focus, .busca:focus-within, .valor-input:focus { outline: none; border-color: var(--primario); box-shadow: var(--anel); }
 .input-icone { position: relative; display: block; }
 .input-icone svg { position: absolute; left: .9rem; top: 50%; transform: translateY(-50%); color: var(--suave); }
-.input-icone .input { padding-left: 2.6rem; }
+.input-icone .input { padding-left: 2.6rem; padding-right: 2.8rem; }
+.input-icone .olho { position: absolute; right: .35rem; top: 50%; transform: translateY(-50%); width: 36px; height: 36px; display: grid; place-items: center; border: 0; border-radius: 10px; background: transparent; color: var(--suave); }
+.input-icone .olho:hover { color: var(--texto); background: var(--superficie-2); }
+.input-icone .olho svg { position: static; transform: none; }
 .campo { display: block; margin-bottom: 1.1rem; }
 .chips { display: flex; flex-wrap: wrap; gap: .45rem; }
 .chip { padding: .4rem .9rem; border-radius: 99px; border: 1px solid var(--borda); background: var(--superficie); font-size: .84rem; font-weight: 600; transition: background .15s, border-color .15s; }

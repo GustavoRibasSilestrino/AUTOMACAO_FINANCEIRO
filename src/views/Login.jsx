@@ -18,6 +18,7 @@ export default function Login({ onEntrar, tema, alternarTema }) {
   const [setor, setSetor] = useState('caixa')
   const [operador, setOperador] = useState(OPERADORES.caixa[0])
   const [senha, setSenha] = useState('')
+  const [ver, setVer] = useState(false) // mostrar a senha digitada
   const [erro, setErro] = useState('')
   const [entrando, setEntrando] = useState(false)
   const atendentes = OPERADORES[setor] ?? []
@@ -92,8 +93,12 @@ export default function Login({ onEntrar, tema, alternarTema }) {
             <span className="rotulo">Senha do setor</span>
             <span className="input-icone">
               <Icon nome="lock" tam={18} />
-              <input type="password" className="input" value={senha} autoFocus autoComplete="current-password"
+              <input type={ver ? 'text' : 'password'} className="input" value={senha} autoFocus autoComplete="current-password"
                 onChange={(e) => setSenha(e.target.value)} placeholder="••••••••" />
+              <button type="button" className="olho" onClick={() => setVer((v) => !v)}
+                aria-label={ver ? 'Esconder a senha' : 'Mostrar a senha'} title={ver ? 'Esconder a senha' : 'Mostrar a senha'}>
+                <Icon nome={ver ? 'eyeOff' : 'eye'} tam={18} />
+              </button>
             </span>
           </label>
 

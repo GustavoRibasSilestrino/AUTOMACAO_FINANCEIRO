@@ -20,7 +20,7 @@ async function setorDoPerfil() {
 export async function entrar({ setor, operador, senha }) {
   if (!REMOTO) {
     if (senha !== SENHAS[setor]) throw new Error('Senha incorreta.')
-    const s = { setor, operador: setor !== 'financeiro' ? operador : null }
+    const s = { setor, operador: Boolean(OPERADORES[setor]) ? operador : null }
     salvarSessao(s)
     return s
   }
@@ -33,8 +33,8 @@ export async function entrar({ setor, operador, senha }) {
     await supabase.auth.signOut()
     throw new Error('Usuário sem perfil de setor. Rode supabase/criar_perfis.sql.')
   }
-  if (setor !== 'financeiro') sessionStorage.setItem(KEY_OPERADOR, operador)
-  return { setor, operador: setor !== 'financeiro' ? operador : null }
+  if (Boolean(OPERADORES[setor])) sessionStorage.setItem(KEY_OPERADOR, operador)
+  return { setor, operador: Boolean(OPERADORES[setor]) ? operador : null }
 }
 
 export async function sair() {
@@ -56,7 +56,7 @@ export async function restaurarSessao() {
   if (!data.session) return null
   const setor = await setorDoPerfil()
   const operador = sessionStorage.getItem(KEY_OPERADOR)
-  const precisaAtendente = setor !== 'financeiro'
+  const precisaAtendente = Boolean(OPERADORES[setor])
   if (!setor || (precisaAtendente && !OPERADORES[setor]?.includes(operador))) {
     await supabase.auth.signOut()
     return null
@@ -81,6 +81,7 @@ const deRow = (r) => ({
   tipo: r.tipo,
   pagador: r.pagador ?? '(não informado)',
   valor: Number(r.valor),
+  conferidoPor: r.conferido_por ?? null,
   status: r.status,
   criadoEm: Date.parse(r.criado_em),
   resolvidoPor: r.resolvido_por,
@@ -102,7 +103,7 @@ function usePagamentosLocal() {
     salvar((l) => l.map((p) => {
       if (p.id !== id || p.status !== 'pendente') return p
       aplicou = true
-      return { ...p, status, valorConferido: extra.valorConferido ?? null,
+      return { ...p, status, valorConferido: extra.valorConferido ?? null, conferidoPor: extra.conferidoPor ?? null,
         resolvidoPor: status === 'cancelado' ? 'Setor' : 'Financeiro', resolvidoEm: Date.now() }
     }))
     return aplicou
@@ -159,6 +160,7 @@ function usePagamentosRemoto() {
   const resolver = async (id, status, extra = {}) => {
     const campos = { status }
     if (extra.valorConferido != null) campos.valor_conferido = extra.valorConferido
+    if (extra.conferidoPor) campos.conferido_por = extra.conferidoPor
     const { data, error } = await supabase
       .from('pagamentos').update(campos).eq('id', id).eq('status', 'pendente').select()
     if (error) { setErro(msgErro(error)); return false }

@@ -1,7 +1,7 @@
 {
   "name": "painel-pagamentos",
   "private": true,
-  "version": "0.4.1",
+  "version": "0.4.2",
   "description": "Painel de Pagamentos - caixa e financeiro",
   "author": "Gustavo Ribas",
   "type": "module",

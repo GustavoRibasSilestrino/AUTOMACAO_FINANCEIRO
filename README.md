@@ -6,13 +6,14 @@ Este documento serve para retomar o trabalho em **qualquer computador**.
 
 - **Código:** https://github.com/GustavoRibasSilestrino/AUTOMACAO_FINANCEIRO (público; nunca commitar o `.env`)
 - **Versão web:** https://automacao-financeiro.vercel.app (publica sozinha a cada envio para a `main`)
-- **Versão atual:** 0.4.1
+- **Versão atual:** 0.4.2
 
 ---
 
 ## 0. Onde paramos (28/10/2026)
 
 **Pronto e no ar**
+- **v0.4.2:** usuários do **Financeiro**: Carlos, Adriana e Gilmara (escolhidos ao entrar; o nome de quem conferiu fica gravado em cada pagamento, aparece no histórico e nos CSV); **olhinho** para ver a senha no login. Exige a migração 4 (`20261029180000_conferido_por.sql`).
 - **v0.4.1:** o **login não é mais lembrado**: ao fechar o app (ou a aba, na versão web) é preciso entrar de novo. No app de desktop, o X da janela **encerra** o programa nos setores Caixa, Cancelamento e Certidões; só o **Financeiro** continua rodando escondido perto do relógio (para receber avisos) e perde o login ao usar "Sair" no ícone da bandeja.
 - **v0.4.0 (29/10/2026):** nome do **pagador obrigatório** em todos os perfis; **tipos por setor** (Certidões só certidão, Cancelamento só taxa de cancelamento, Caixa os 4); **atendentes** Caixa = Biga, Particular, Renata / Cancelamento = Murilo, Luís / Certidões = Depósitos; aba **Arquivos** = um arquivo de pagamentos por dia, só do perfil (Caixa: do atendente; Cancelamento/Certidões: do setor; Financeiro: todos); soma por atendente; **visual novo** (menu recolhível, painel em blocos, gráficos, celular); assinatura **dev ribas**. Exige a migração 3 no Supabase.
 - App completo (React + Electron) com a identidade visual do Protesto Sorocaba, tema claro/escuro e responsivo.
@@ -166,7 +167,9 @@ O que falta é só **você criar o projeto no Supabase** (conta sua) e preencher
 2. **Criar as tabelas e regras:** *SQL Editor → New query* → cole o conteúdo de cada arquivo de `supabase/migrations/`, **na ordem**, rodando um de cada vez (**Run**):
    1. `20261028120000_painel_pagamentos.sql` (tabelas, regras de acesso, tempo real)
    2. `20261028180000_cancelar_e_valor_diferente.sql` (cancelar envio e "valor diferente")
-   3. `20261029100000_pagador_tipos_e_atendentes.sql` (nome do pagador, tipos e atendentes por setor). **A versão 0.4.0 do app precisa desta migração, e depois dela só a 0.4.0 (ou mais nova) consegue enviar pagamentos**: atualize o app em todos os PCs junto.
+   3. `20261029100000_pagador_tipos_e_atendentes.sql` (nome do pagador, tipos e atendentes por setor)
+   4. `20261029180000_conferido_por.sql` (quem do Financeiro conferiu). **O app 0.4.2 precisa desta migração**; sem ela, confirmar/não localizar/valor diferente dá erro.
+   (sobre a 3:) **A versão 0.4.0 do app precisa desta migração, e depois dela só a 0.4.0 (ou mais nova) consegue enviar pagamentos**: atualize o app em todos os PCs junto.
 3. **Desligar o cadastro aberto:** *Authentication → Sign In / Providers* → desmarque **Allow new users to sign up**. (Importante: senão qualquer pessoa com a chave pública poderia criar conta.)
 4. **Criar os 4 usuários de setor:** *Authentication → Users → Add user → Create new user*, marcando **Auto Confirm User**. Uma conta por setor, e a senha é a "senha do setor":
 

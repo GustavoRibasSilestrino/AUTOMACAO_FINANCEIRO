@@ -32,8 +32,8 @@ export default function Shell({
 
   const financeiro = sessao.setor === 'financeiro'
   const operadores = OPERADORES[sessao.setor] ?? []
-  const nome = financeiro ? 'Financeiro' : (sessao.operador ?? SETORES[sessao.setor])
-  const papel = financeiro ? 'Conferência bancária' : SETORES[sessao.setor]
+  const nome = sessao.operador ?? (financeiro ? 'Financeiro' : SETORES[sessao.setor])
+  const papel = financeiro ? 'Financeiro · conferência' : SETORES[sessao.setor]
   const hoje = new Date().toLocaleDateString('pt-BR', { weekday: 'long', day: 'numeric', month: 'long' })
 
   return (

@@ -50,7 +50,10 @@ const TITULOS = { painel: 'Painel', pagamentos: 'Pagamentos', arquivos: 'Arquivo
 function Aplicacao({ sessao, onSair, onTrocarOperador, tema, alternarTema }) {
   const financeiro = sessao.setor === 'financeiro'
   const dados = usePagamentos() // uma única conexão compartilhada por todas as telas
-  const { pagamentos, resolver, erro } = dados
+  const { pagamentos, erro } = dados
+  // Quem do Financeiro conferiu (Carlos, Adriana ou Gilmara) fica registrado no pagamento
+  const resolver = (id, status, extra = {}) =>
+    dados.resolver(id, status, financeiro ? { ...extra, conferidoPor: sessao.operador } : extra)
   const [cfg, setCfg] = useConfigFinanceiro()
   const [tela, setTela] = useState(financeiro ? 'painel' : 'pagamentos')
 

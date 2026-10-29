@@ -29,11 +29,11 @@ export default function Historico({ pagamentos, resolver }) {
   const exportar = () =>
     baixarCsv(
       `pagamentos-${new Date().toISOString().slice(0, 10)}.csv`,
-      ['Data/hora', 'Pagador', 'Setor', 'Atendente', 'Tipo', 'Valor informado (R$)', 'Valor no banco (R$)', 'Status', 'Conferido em'],
+      ['Data/hora', 'Pagador', 'Setor', 'Atendente', 'Tipo', 'Valor informado (R$)', 'Valor no banco (R$)', 'Status', 'Conferido em', 'Conferido por'],
       lista.map((p) => [
         new Date(p.criadoEm).toLocaleString('pt-BR'), p.pagador, SETORES[p.setor], p.operador ?? '', p.tipo,
         p.valor.toFixed(2).replace('.', ','), p.valorConferido == null ? '' : p.valorConferido.toFixed(2).replace('.', ','),
-        STATUS[p.status].rotulo, p.resolvidoEm ? new Date(p.resolvidoEm).toLocaleString('pt-BR') : '',
+        STATUS[p.status].rotulo, p.resolvidoEm ? new Date(p.resolvidoEm).toLocaleString('pt-BR') : '', p.conferidoPor ?? '',
       ]),
     )
 
@@ -91,7 +91,7 @@ export default function Historico({ pagamentos, resolver }) {
                     <b>{brl(p.valor)}</b>
                     {p.status === 'divergente' && <small className="dif-info"> banco: {brl(p.valorConferido)}</small>}
                   </td>
-                  <td data-label="Status"><StatusPill status={p.status} /></td>
+                  <td data-label="Status"><StatusPill status={p.status} />{p.conferidoPor && <small className="operador">por {p.conferidoPor}</small>}</td>
                   <td data-label="Quando" className="mono">
                     {dataHora(p.criadoEm)}
                     <small> · {duracao((p.resolvidoEm ?? agora) - p.criadoEm)}</small>
