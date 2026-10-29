@@ -47,7 +47,6 @@ export default function Login({ onEntrar, tema, alternarTema }) {
         <span className="brilho b1" /><span className="brilho b2" />
         <Logo invertido tamanho="lg" />
         <div className="login-texto">
-          <p className="login-selo"><Icon nome="shield" tam={14} /> Conferência de Pix em tempo real</p>
           <h2>Cada Pix informado,<br />conferido na hora.</h2>
           <ul>
             <li><span><Icon nome="wallet" tam={18} /></span> O atendimento informa o pagador e o valor</li>

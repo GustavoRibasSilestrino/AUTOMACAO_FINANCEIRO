@@ -6,7 +6,7 @@ Este documento serve para retomar o trabalho em **qualquer computador**.
 
 - **Código:** https://github.com/GustavoRibasSilestrino/AUTOMACAO_FINANCEIRO (público; nunca commitar o `.env`)
 - **Versão web:** https://automacao-financeiro.vercel.app (publica sozinha a cada envio para a `main`)
-- **Versão atual:** 0.4.2
+- **Versão atual:** 0.4.3
 
 ---
 
