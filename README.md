@@ -1,21 +1,46 @@
-# Painel de Pagamentos — Protótipo + Roteiro
+# Painel de Pagamentos — Protesto Sorocaba
 
-Sistema para o **caixa/atendimento** informar valores recebidos e o **financeiro** conferir no banco, com pop-up persistente.
+Sistema para o **caixa/atendimento** informar valores recebidos e o **financeiro** conferir no banco, com aviso persistente (notificação no canto da tela e pop-up). App de desktop (Electron) + versão web, com dados no Supabase.
 
 Este documento serve para retomar o trabalho em **qualquer computador**.
+
+- **Código:** https://github.com/GustavoRibasSilestrino/AUTOMACAO_FINANCEIRO (público; nunca commitar o `.env`)
+- **Versão web:** https://automacao-financeiro.vercel.app (publica sozinha a cada envio para a `main`)
+- **Versão atual:** 0.3.0
+
+---
+
+## 0. Onde paramos (28/10/2026)
+
+**Pronto e no ar**
+- App completo (React + Electron) com a identidade visual do Protesto Sorocaba, tema claro/escuro e responsivo.
+- Fluxo: setor informa o valor → financeiro é avisado (notificação no canto do Windows, repetida a cada minuto; pop-up dentro do app) → confirma, registra **valor diferente** ou marca **não localizado** → o setor vê o resultado na tela. O setor pode **cancelar** o envio enquanto aguarda.
+- Painel do financeiro (indicadores, fila, gráficos), histórico com filtros, **relatórios CSV** (fechamento do dia, lista filtrada, envios do atendente), pesquisa de arquivos (Ctrl+K), troca de atendente no Caixa sem sair.
+- Supabase com as **2 migrações aplicadas** (conferido pela API); cadastro aberto desligado; regras de acesso testadas (`npm test`: 15 testes).
+- GitHub e Vercel atualizados na 0.3.0. Instalador e ZIP gerados (`npm run pacote`) e distribuídos pelo Google Drive.
+
+**Falta (depende de quem usa)**
+- [ ] **Teste de ponta a ponta com 2 computadores e o Supabase real** (checklist na seção 4). Marcado para 29/10/2026. Ainda não foram testados: login com as senhas reais, pop-up em tempo real entre PCs e o balão de notificação no app instalado.
+- [ ] Conferir no Supabase: **Authentication → Users** com os 4 e-mails de setor e **Table Editor → perfis** com 4 linhas (não dá para verificar de fora).
+- [ ] **Logo oficial** (SVG ou PNG grande) para trocar a logo recriada em CSS e o ícone provisório "PS".
+- [ ] **Arquivos reais na pesquisa:** hoje são 8 exemplos; é preciso definir onde os arquivos ficam (pasta de rede, Drive…) para indexar.
+- [ ] Decidir o plano do Supabase: o gratuito pausa o projeto após ~1 semana sem uso e não tem backup automático (plano Pro resolve).
+- [ ] Opcionais: conta por pessoa do financeiro (saber quem confirmou), atualização automática do app, assinatura digital do instalador (remove o aviso do Windows).
+
+**Como retomar em outro computador:** `git clone` (seção 6), `npm install`, copiar `.env.example` para `.env` com a URL e a chave `anon` do Supabase (seção 4), `npm run dev` para testar e `npm run pacote` para gerar o instalador + ZIP.
 
 ---
 
 ## 1. Requisitos do sistema (levantados na conversa)
 
-- [ ] **Pesquisa de arquivos** (busca por nome, filtro por setor).
-- [ ] **"OK" do financeiro** para pagamentos.
-- [ ] O caixa **digita o valor recebido**; o financeiro recebe **pop-up no PC**, para conferir no banco se o valor entrou ou não.
-- [ ] Separação por **setores**: Caixa, Cancelamento, Certidões.
-- [ ] **Só o financeiro** recebe pop-ups: entra no app com a **senha do setor financeiro** e precisa estar **configurado para receber pop-up**.
-- [ ] No setor **Caixa** (atendimento físico) é possível **escolher o usuário** — 3 perfis: **Biga**, **Particular**, **Renata**.
-- [ ] O atendente informa o tipo: **título em aberto**, **certidão**, **taxa de cancelamento** ou **custas da CPFL**.
-- [ ] O pop-up **fica aparecendo até alguém clicar** na notificação.
+- [x] **Pesquisa de arquivos** (busca por nome, filtro por setor) — com dados de exemplo; falta indexar os arquivos reais.
+- [x] **"OK" do financeiro** para pagamentos.
+- [x] O caixa **digita o valor recebido**; o financeiro recebe **pop-up no PC**, para conferir no banco se o valor entrou ou não.
+- [x] Separação por **setores**: Caixa, Cancelamento, Certidões.
+- [x] **Só o financeiro** recebe pop-ups: entra no app com a **senha do setor financeiro** e precisa estar **configurado para receber pop-up**.
+- [x] No setor **Caixa** (atendimento físico) é possível **escolher o usuário** — 3 perfis: **Biga**, **Particular**, **Renata**.
+- [x] O atendente informa o tipo: **título em aberto**, **certidão**, **taxa de cancelamento** ou **custas da CPFL**.
+- [x] O pop-up **fica aparecendo até alguém clicar** na notificação.
 
 ---
 
