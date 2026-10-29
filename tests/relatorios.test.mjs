@@ -16,7 +16,7 @@ const { duracao, brl, STATUS } = await import('../src/store.js')
 const agora = Date.now(), min = 60000
 let n = 0
 const mk = (setor, operador, tipo, valor, haMin, status, dur, extra = {}) => ({
-  id: `p${++n}`, setor, operador, tipo, valor, criadoEm: agora - haMin * min, status,
+  id: `p${++n}`, setor, operador, tipo, valor, pagador: `Pagador ${n}`, criadoEm: agora - haMin * min, status,
   resolvidoEm: status === 'pendente' ? null : agora - (haMin - dur) * min, valorConferido: null, ...extra,
 })
 // "haMin" pequeno para ficar no mesmo dia do teste, mesmo perto da meia-noite
@@ -26,8 +26,8 @@ const dados = () => {
   return [
     mk('caixa', 'Renata', 'Título em aberto', 1234.56, base, 'confirmado', 0),
     mk('caixa', 'Biga', 'Custas CPFL', 410, base, 'confirmado', 0),
-    mk('cancelamento', null, 'Taxa de cancelamento', 289, base, 'nao_recebido', 0),
-    mk('certidoes', null, 'Certidão', 100, base, 'divergente', 0, { valorConferido: 90 }),
+    mk('cancelamento', 'Murilo', 'Taxa de cancelamento', 289, base, 'nao_recebido', 0),
+    mk('certidoes', 'Depósitos', 'Certidão', 100, base, 'divergente', 0, { valorConferido: 90 }),
     mk('caixa', 'Renata', 'Custas CPFL', 150.5, base, 'pendente', 0),
     mk('caixa', 'Particular', 'Certidão', 70, base, 'cancelado', 0),
     mk('caixa', 'Renata', 'Título em aberto', 99, 60 * 30, 'confirmado', 1), // ontem: fora do fechamento
@@ -67,8 +67,9 @@ test('resumos por setor, atendente do caixa e tipo', () => {
 test('detalhe mostra o valor encontrado no banco nos pagamentos com valor diferente', () => {
   const linha = csv.split('\r\n').find((l) => l.includes('"Valor diferente";'))
   const c = celulas(linha)
-  assert.equal(c[3], '100,00') // informado
-  assert.equal(c[4], '90,00') // no banco
+  assert.equal(c[1], 'Pagador 4') // nome do pagador no detalhe
+  assert.equal(c[4], '100,00') // informado
+  assert.equal(c[5], '90,00') // no banco
   assert.ok(csv.includes('"Cancelado"'))
 })
 
@@ -88,4 +89,11 @@ test('formatação: duração, moeda e status', () => {
   assert.match(brl(1234.56).replace(/\s/g, ' '), /^R\$ 1\.234,56$/)
   for (const s of ['pendente', 'confirmado', 'nao_recebido', 'divergente', 'cancelado'])
     assert.ok(STATUS[s].rotulo && STATUS[s].tom, `status ${s}`)
+})
+
+test('resumo por atendente existe para os 3 setores (Murilo, Luís, Depósitos, Caixa)', () => {
+  assert.deepEqual(achar(csv, 'Murilo').slice(0, 2), ['Murilo', '1'])
+  assert.deepEqual(achar(csv, 'Luís').slice(0, 2), ['Luís', '0'])
+  assert.deepEqual(achar(csv, 'Depósitos').slice(0, 2), ['Depósitos', '1'])
+  assert.ok(csv.includes('"Cancelamento por atendente"') && csv.includes('"Certidões por atendente"'))
 })

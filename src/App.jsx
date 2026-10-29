@@ -42,7 +42,7 @@ export default function App() {
   )
 }
 
-const TITULOS = { painel: 'Painel', pagamentos: 'Pagamentos', arquivos: 'Pesquisa de arquivos' }
+const TITULOS = { painel: 'Painel', pagamentos: 'Pagamentos', arquivos: 'Arquivos de pagamentos' }
 
 function Aplicacao({ sessao, onSair, onTrocarOperador, tema, alternarTema }) {
   const financeiro = sessao.setor === 'financeiro'
@@ -81,7 +81,7 @@ function Aplicacao({ sessao, onSair, onTrocarOperador, tema, alternarTema }) {
 
   return (
     <Shell sessao={sessao} nav={nav} tela={tela} onNav={setTela} onSair={onSair} onTrocarOperador={onTrocarOperador}
-      tema={tema} alternarTema={alternarTema} titulo={TITULOS[tela]}>
+      tema={tema} alternarTema={alternarTema} titulo={TITULOS[tela]} pendentes={pendentes.length}>
       {tela === 'painel' && financeiro && (
         <Painel pagamentos={pagamentos} pendentes={pendentes} resolver={resolver}
           cfg={cfg} setCfg={setCfg} erro={erro} irPara={setTela} />
@@ -89,7 +89,7 @@ function Aplicacao({ sessao, onSair, onTrocarOperador, tema, alternarTema }) {
       {tela === 'pagamentos' && (financeiro
         ? <Historico pagamentos={pagamentos} resolver={resolver} />
         : <Atendimento sessao={sessao} dados={dados} />)}
-      {tela === 'arquivos' && <Arquivos />}
+      {tela === 'arquivos' && <Arquivos sessao={sessao} pagamentos={pagamentos} />}
       {atual && <PopUp p={atual} restantes={pendentes.length} resolver={resolver} erro={erro}
         estilo={cfg.estilo ?? 'canto'} />}
     </Shell>

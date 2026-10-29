@@ -1,8 +1,7 @@
 // Camada de dados: fala com o Supabase (REMOTO) ou com o localStorage (modo local).
 import { useCallback, useEffect, useState } from 'react'
 import { supabase, REMOTO, DOMINIO } from './supabase.js'
-import { ARQUIVOS } from './arquivos.js'
-import { SENHAS, useLocalStorage, lerSessao, salvarSessao } from './store.js'
+import { OPERADORES, SENHAS, useLocalStorage, lerSessao, salvarSessao } from './store.js'
 
 export { REMOTO }
 
@@ -21,7 +20,7 @@ async function setorDoPerfil() {
 export async function entrar({ setor, operador, senha }) {
   if (!REMOTO) {
     if (senha !== SENHAS[setor]) throw new Error('Senha incorreta.')
-    const s = { setor, operador: setor === 'caixa' ? operador : null }
+    const s = { setor, operador: setor !== 'financeiro' ? operador : null }
     salvarSessao(s)
     return s
   }
@@ -34,8 +33,8 @@ export async function entrar({ setor, operador, senha }) {
     await supabase.auth.signOut()
     throw new Error('Usuário sem perfil de setor. Rode supabase/criar_perfis.sql.')
   }
-  if (setor === 'caixa') localStorage.setItem(KEY_OPERADOR, operador)
-  return { setor, operador: setor === 'caixa' ? operador : null }
+  if (setor !== 'financeiro') localStorage.setItem(KEY_OPERADOR, operador)
+  return { setor, operador: setor !== 'financeiro' ? operador : null }
 }
 
 export async function sair() {
@@ -57,11 +56,12 @@ export async function restaurarSessao() {
   if (!data.session) return null
   const setor = await setorDoPerfil()
   const operador = localStorage.getItem(KEY_OPERADOR)
-  if (!setor || (setor === 'caixa' && !operador)) {
+  const precisaAtendente = setor !== 'financeiro'
+  if (!setor || (precisaAtendente && !OPERADORES[setor]?.includes(operador))) {
     await supabase.auth.signOut()
     return null
   }
-  return { setor, operador: setor === 'caixa' ? operador : null }
+  return { setor, operador: precisaAtendente ? operador : null }
 }
 
 // Avisa se o login expirar ou for encerrado em outra aba
@@ -79,6 +79,7 @@ const deRow = (r) => ({
   setor: r.setor,
   operador: r.operador,
   tipo: r.tipo,
+  pagador: r.pagador ?? '(não informado)',
   valor: Number(r.valor),
   status: r.status,
   criadoEm: Date.parse(r.criado_em),
@@ -114,11 +115,18 @@ function usePagamentosRemoto() {
   const [erro, setErro] = useState('')
 
   const carregar = useCallback(async () => {
-    const { data, error } = await supabase
-      .from('pagamentos').select('*').order('criado_em', { ascending: false }).limit(300)
-    if (error) return setErro(msgErro(error))
+    // Últimos 45 dias (os arquivos por dia usam isso), em páginas de 1000 (limite do servidor)
+    const desde = new Date(Date.now() - 45 * 86400000).toISOString()
+    const todos = []
+    for (let pagina = 0; pagina < 5; pagina++) {
+      const { data, error } = await supabase.from('pagamentos').select('*').gte('criado_em', desde)
+        .order('criado_em', { ascending: false }).range(pagina * 1000, pagina * 1000 + 999)
+      if (error) return setErro(msgErro(error))
+      todos.push(...data)
+      if (data.length < 1000) break
+    }
     setErro('')
-    setLista(data.map(deRow))
+    setLista(todos.map(deRow))
   }, [])
 
   useEffect(() => {
@@ -140,9 +148,9 @@ function usePagamentosRemoto() {
     }
   }, [carregar])
 
-  const enviar = async ({ setor, operador, tipo, valor }) => {
+  const enviar = async ({ setor, operador, tipo, valor, pagador }) => {
     const { data, error } = await supabase
-      .from('pagamentos').insert({ setor, operador: operador ?? null, tipo, valor }).select().single()
+      .from('pagamentos').insert({ setor, operador: operador ?? null, tipo, valor, pagador }).select().single()
     if (error) throw new Error(msgErro(error))
     setLista((l) => (l.some((p) => p.id === data.id) ? l : [deRow(data), ...l]))
   }
@@ -164,27 +172,3 @@ function usePagamentosRemoto() {
 }
 
 export const usePagamentos = REMOTO ? usePagamentosRemoto : usePagamentosLocal
-
-// ---------------------------------------------------------------- arquivos --
-export function useArquivos(q, setor) {
-  const [lista, setLista] = useState([])
-  useEffect(() => {
-    const termo = q.trim()
-    if (!REMOTO) {
-      const t = termo.toLowerCase()
-      setLista(ARQUIVOS.filter((a) => (!setor || a.setor === setor) && a.nome.toLowerCase().includes(t)))
-      return
-    }
-    let ativo = true
-    const espera = setTimeout(async () => {
-      let consulta = supabase.from('arquivos').select('id,nome,setor,data')
-        .order('data', { ascending: false }).limit(100)
-      if (termo) consulta = consulta.ilike('nome', `%${termo.replace(/[\\%_]/g, '\\$&')}%`)
-      if (setor) consulta = consulta.eq('setor', setor)
-      const { data } = await consulta
-      if (ativo) setLista(data ?? [])
-    }, 250)
-    return () => { ativo = false; clearTimeout(espera) }
-  }, [q, setor])
-  return lista
-}

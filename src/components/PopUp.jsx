@@ -1,7 +1,8 @@
 import { useEffect, useRef, useState } from 'react'
 import Icon from './Icon.jsx'
-import ValorDiferente from './ValorDiferente.jsx'
 import Logo from './Logo.jsx'
+import ValorDiferente from './ValorDiferente.jsx'
+import { Avatar } from './ui.jsx'
 import { useAgora } from '../hooks.js'
 import { SETORES, brl, hora, duracao } from '../store.js'
 
@@ -11,6 +12,8 @@ export default function PopUp({ p, restantes, resolver, erro, estilo }) {
   const agora = useAgora()
   const [dif, setDif] = useState(false) // formulário "valor diferente" aberto
   useEffect(() => setDif(false), [p.id])
+
+  const origem = `${SETORES[p.setor]}${p.operador ? ' · ' + p.operador : ''}`
 
   useEffect(() => {
     const beep = () => {
@@ -35,8 +38,8 @@ export default function PopUp({ p, restantes, resolver, erro, estilo }) {
   useEffect(() => {
     if (!window.desktop) return
     window.desktop.alerta({
-      titulo: `Pagamento aguardando: ${brl(p.valor)}`,
-      corpo: `${SETORES[p.setor]}${p.operador ? ' · ' + p.operador : ''} · ${p.tipo}. Confira no banco.`,
+      titulo: `Pix de ${p.pagador}: ${brl(p.valor)}`,
+      corpo: `${origem} · ${p.tipo}. Confira no banco.`,
       modo: estilo,
     })
     return () => window.desktop.alerta(null)
@@ -45,8 +48,8 @@ export default function PopUp({ p, restantes, resolver, erro, estilo }) {
   // Navegador (sem o app de desktop): notificação do próprio navegador
   useEffect(() => {
     if (window.desktop || !('Notification' in window) || Notification.permission !== 'granted') return
-    const n = new Notification(`${SETORES[p.setor]}${p.operador ? ' · ' + p.operador : ''}`, {
-      body: `${p.tipo} — ${brl(p.valor)}\nConfirme no banco.`,
+    const n = new Notification(`Pix de ${p.pagador}: ${brl(p.valor)}`, {
+      body: `${origem} · ${p.tipo}\nConfirme no banco.`,
       requireInteraction: true, // fica na tela até clicar
       tag: p.id,
     })
@@ -66,13 +69,20 @@ export default function PopUp({ p, restantes, resolver, erro, estilo }) {
 
         <div className="popup-corpo">
           <span className="popup-anel"><Icon nome="bell" tam={26} /></span>
-          <p className="popup-origem">{SETORES[p.setor]}{p.operador ? ` · ${p.operador}` : ''}</p>
+          <p className="popup-origem">{origem}</p>
           <p className="popup-valor">{brl(p.valor)}</p>
+          <div className="popup-pagador">
+            <Avatar nome={p.pagador} tam={40} />
+            <div>
+              <small>Pagador</small>
+              <strong>{p.pagador}</strong>
+            </div>
+          </div>
           <p className="popup-meta">{p.tipo} · informado às {hora(p.criadoEm)}</p>
           <p className="cronometro grande"><Icon nome="clock" tam={16} /> aguardando há {duracao(agora - p.criadoEm)}</p>
         </div>
 
-        <p className="popup-dica">Confira no extrato do banco se este valor entrou.</p>
+        <p className="popup-dica">Confira no extrato do banco se este Pix entrou.</p>
         {erro && <p className="erro-msg"><Icon nome="alert" tam={16} /> {erro}</p>}
 
         {dif ? (

@@ -6,13 +6,41 @@ export const SETORES = {
   cancelamento: 'Cancelamento',
   certidoes: 'Certidões',
 }
-export const OPERADORES_CAIXA = ['Biga', 'Particular', 'Renata']
+// Atendentes de cada setor (escolhidos ao entrar). O Financeiro não tem atendentes.
+export const OPERADORES = {
+  caixa: ['Biga', 'Particular', 'Renata'],
+  cancelamento: ['Murilo', 'Luís'],
+  certidoes: ['Depósitos'],
+}
 export const TIPOS = [
   'Título em aberto',
   'Certidão',
   'Taxa de cancelamento',
   'Custas CPFL',
 ]
+
+// O que cada setor pode receber: Certidões só certidão, Cancelamento só taxa de cancelamento, Caixa tudo
+export const TIPOS_POR_SETOR = {
+  caixa: ['Título em aberto', 'Custas CPFL', 'Certidão', 'Taxa de cancelamento'],
+  cancelamento: ['Taxa de cancelamento'],
+  certidoes: ['Certidão'],
+}
+
+// Soma, lista e arquivos: no Caixa cada atendente vê só os seus pagamentos; nos demais vale o setor todo
+export const ESCOPO_POR_ATENDENTE = { caixa: true }
+export const doEscopo = (p, sessao) =>
+  p.setor === sessao.setor &&
+  (!ESCOPO_POR_ATENDENTE[sessao.setor] || (p.operador ?? null) === (sessao.operador ?? null))
+export const escopoRotulo = (sessao) =>
+  ESCOPO_POR_ATENDENTE[sessao.setor] && sessao.operador
+    ? `${SETORES[sessao.setor]} · ${sessao.operador}`
+    : SETORES[sessao.setor] ?? 'Financeiro'
+
+// Nome de quem fez o Pix: obrigatório em todos os perfis
+export const pagadorValido = (nome) => {
+  const n = (nome ?? '').trim()
+  return n.length >= 2 && n.length <= 120
+}
 
 // SÓ MODO LOCAL (sem Supabase): senhas fixas de teste. Com Supabase, o login usa o Auth do servidor.
 // Com o .env do Supabase preenchido, este objeto fica vazio e as senhas nem entram no instalador.

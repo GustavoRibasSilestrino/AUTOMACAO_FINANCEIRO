@@ -14,9 +14,9 @@ const como = async (id, role = 'authenticated') => {
   await db.query("select set_config('request.jwt.claim.sub', $1, false)", [id ?? ''])
   await db.exec(`set role ${role}`)
 }
-const inserir = (setor, operador, tipo = 'Certidão', valor = 10) =>
-  db.query('insert into pagamentos(setor, operador, tipo, valor) values ($1,$2,$3,$4) returning id',
-    [setor, operador, tipo, valor]).then((r) => r.rows[0].id)
+const inserir = (setor, operador, tipo = 'Certidão', valor = 10, pagador = 'Maria da Silva') =>
+  db.query('insert into pagamentos(setor, operador, tipo, valor, pagador) values ($1,$2,$3,$4,$5) returning id',
+    [setor, operador, tipo, valor, pagador]).then((r) => r.rows[0].id)
 const contar = async (sql) => Number((await db.query(sql)).rows[0].n)
 const atualizar = async (sql) => (await db.query(sql)).rows.length
 
@@ -54,11 +54,12 @@ test('criar: só do próprio setor, sempre pendente, com regras de atendente/tip
   await assert.rejects(inserir('caixa', 'Renata', 'Outro'), 'tipo inválido')
   await assert.rejects(inserir('caixa', 'Renata', 'Certidão', -1), 'valor negativo')
   await assert.rejects(db.query(
-    "insert into pagamentos(setor,operador,tipo,valor,status) values ('caixa','Biga','Certidão',5,'confirmado')"),
+    "insert into pagamentos(setor,operador,tipo,valor,pagador,status) values ('caixa','Biga','Certidão',5,'Maria','confirmado')"),
   'status definido no insert')
   await como(U.cancelamento)
-  await inserir('cancelamento', null, 'Taxa de cancelamento', 80)
-  await assert.rejects(inserir('cancelamento', 'Biga', 'Taxa de cancelamento', 80), 'só o caixa tem atendente')
+  await inserir('cancelamento', 'Murilo', 'Taxa de cancelamento', 80)
+  await assert.rejects(inserir('cancelamento', 'Biga', 'Taxa de cancelamento', 80), 'atendente de outro setor')
+  await assert.rejects(inserir('cancelamento', null, 'Taxa de cancelamento', 80), 'cancelamento exige atendente')
   await como(U.financeiro)
   await assert.rejects(inserir('caixa', 'Biga'), 'financeiro não cria')
 })
@@ -76,6 +77,31 @@ test('ler: cada setor vê só os seus; financeiro vê todos; sem perfil e anôni
   await como(null, 'anon')
   for (const t of ['pagamentos', 'arquivos', 'perfis'])
     await assert.rejects(contar(`select count(*) n from ${t}`), `anônimo lendo ${t}`)
+})
+
+test('tipos por setor: Caixa envia os 4; Cancelamento só taxa; Certidões só certidão', async () => {
+  await como(U.caixa)
+  for (const t of ['Título em aberto', 'Custas CPFL', 'Certidão', 'Taxa de cancelamento'])
+    await inserir('caixa', 'Particular', t, 15)
+  await como(U.cancelamento)
+  await inserir('cancelamento', 'Luís', 'Taxa de cancelamento', 90)
+  for (const t of ['Título em aberto', 'Custas CPFL', 'Certidão'])
+    await assert.rejects(inserir('cancelamento', 'Murilo', t), `cancelamento enviando ${t}`)
+  await como(U.certidoes)
+  await inserir('certidoes', 'Depósitos', 'Certidão', 60)
+  for (const t of ['Título em aberto', 'Custas CPFL', 'Taxa de cancelamento'])
+    await assert.rejects(inserir('certidoes', 'Depósitos', t), `certidões enviando ${t}`)
+  await assert.rejects(inserir('certidoes', 'Murilo', 'Certidão'), 'atendente de outro setor')
+})
+
+test('nome do pagador é obrigatório (2 a 120 letras, sem só espaços)', async () => {
+  await como(U.caixa)
+  await inserir('caixa', 'Biga', 'Certidão', 30, 'Jo')
+  for (const ruim of ['', ' ', '   ', 'A', ' B ', 'x'.repeat(121)])
+    await assert.rejects(inserir('caixa', 'Biga', 'Certidão', 30, ruim), `pagador ${JSON.stringify(ruim.slice(0, 5))}`)
+  await assert.rejects(db.query(
+    "insert into pagamentos(setor,operador,tipo,valor) values ('caixa','Biga','Certidão',30)"), 'sem pagador')
+  await assert.rejects(db.query(`update pagamentos set pagador='Outro' where setor='caixa'`), 'pagador não se altera depois')
 })
 
 test('financeiro confirma, e o servidor grava quem/quando; não confirma duas vezes', async () => {

@@ -13,15 +13,21 @@ COMO INSTALAR
 
 PRIMEIRO ACESSO
 - Escolha o seu setor: Caixa, Cancelamento, Certidões ou Financeiro.
-- No Caixa, escolha também o atendente (Biga, Particular ou Renata).
-  Para trocar de atendente depois, use a caixa "Atendente" no menu da
-  esquerda (não precisa sair).
+- Escolha também o atendente:
+    Caixa: Biga, Particular ou Renata
+    Cancelamento: Murilo ou Luís
+    Certidões: Depósitos
+  Para trocar de atendente depois, use a caixa "Atendente" no topo da
+  tela (não precisa sair).
 - Digite a senha do setor (quem administra o sistema informa).
 
 COMO USAR
 - CAIXA / CANCELAMENTO / CERTIDÕES:
-  escolha o tipo de pagamento, digite o valor recebido e clique em
-  "Enviar ao financeiro". O resultado aparece na mesma tela quando o
+  digite o NOME DO PAGADOR (obrigatório) e o valor do Pix e clique em
+  "Enviar ao financeiro". Cada setor só envia o seu tipo: Certidões só
+  certidão; Cancelamento só taxa de cancelamento; o Caixa envia os 4 tipos
+  (título em aberto, custas CPFL, certidão e taxa de cancelamento).
+  O resultado aparece na mesma tela quando o
   financeiro conferir, com um aviso.
   - Digitou o valor errado? Enquanto estiver "Aguardando", clique em
     "Cancelar envio" e envie de novo. Depois que o financeiro conferiu,
@@ -36,7 +42,10 @@ COMO USAR
     "Valor diferente"  - entrou outro valor: digite quanto entrou;
     "Não localizei"    - não encontrou o valor.
   O aviso se repete a cada 1 minuto enquanto houver pagamento aguardando.
-- Ctrl+K abre a pesquisa de arquivos em qualquer tela.
+- ARQUIVOS (ou Ctrl+K): um arquivo de pagamentos por dia, para pesquisar
+  (por pagador, valor ou data) e baixar. Cada perfil só vê o que é seu:
+  no Caixa, só os pagamentos do atendente que entrou; em Cancelamento e
+  Certidões, só os do setor. O Financeiro vê todos.
 
 RELATÓRIOS PARA BAIXAR (abrem no Excel)
 - Financeiro > Painel > "Relatório do dia": fechamento com totais por
@@ -62,3 +71,5 @@ ATUALIZAR PARA UMA VERSÃO NOVA
 
 DESINSTALAR
 - Configurações do Windows > Aplicativos > Painel de Pagamentos > Desinstalar.
+
+Desenvolvido por dev ribas.

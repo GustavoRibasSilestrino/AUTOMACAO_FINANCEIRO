@@ -6,13 +6,14 @@ Este documento serve para retomar o trabalho em **qualquer computador**.
 
 - **Código:** https://github.com/GustavoRibasSilestrino/AUTOMACAO_FINANCEIRO (público; nunca commitar o `.env`)
 - **Versão web:** https://automacao-financeiro.vercel.app (publica sozinha a cada envio para a `main`)
-- **Versão atual:** 0.3.0
+- **Versão atual:** 0.4.0
 
 ---
 
 ## 0. Onde paramos (28/10/2026)
 
 **Pronto e no ar**
+- **v0.4.0 (29/10/2026):** nome do **pagador obrigatório** em todos os perfis; **tipos por setor** (Certidões só certidão, Cancelamento só taxa de cancelamento, Caixa os 4); **atendentes** Caixa = Biga, Particular, Renata / Cancelamento = Murilo, Luís / Certidões = Depósitos; aba **Arquivos** = um arquivo de pagamentos por dia, só do perfil (Caixa: do atendente; Cancelamento/Certidões: do setor; Financeiro: todos); soma por atendente; **visual novo** (menu recolhível, painel em blocos, gráficos, celular); assinatura **dev ribas**. Exige a migração 3 no Supabase.
 - App completo (React + Electron) com a identidade visual do Protesto Sorocaba, tema claro/escuro e responsivo.
 - Fluxo: setor informa o valor → financeiro é avisado (notificação no canto do Windows, repetida a cada minuto; pop-up dentro do app) → confirma, registra **valor diferente** ou marca **não localizado** → o setor vê o resultado na tela. O setor pode **cancelar** o envio enquanto aguarda.
 - Painel do financeiro (indicadores, fila, gráficos), histórico com filtros, **relatórios CSV** (fechamento do dia, lista filtrada, envios do atendente), pesquisa de arquivos (Ctrl+K), troca de atendente no Caixa sem sair.
@@ -163,7 +164,8 @@ O que falta é só **você criar o projeto no Supabase** (conta sua) e preencher
 1. **Criar o projeto** em [supabase.com](https://supabase.com) (o plano gratuito basta para começar). Região sugerida: *South America (São Paulo)*. Guarde a senha do banco.
 2. **Criar as tabelas e regras:** *SQL Editor → New query* → cole o conteúdo de cada arquivo de `supabase/migrations/`, **na ordem**, rodando um de cada vez (**Run**):
    1. `20261028120000_painel_pagamentos.sql` (tabelas, regras de acesso, tempo real)
-   2. `20261028180000_cancelar_e_valor_diferente.sql` (cancelar envio e "valor diferente"). **A versão 0.3.0 do app precisa desta migração**: sem ela, só esses dois botões dão erro; o resto funciona.
+   2. `20261028180000_cancelar_e_valor_diferente.sql` (cancelar envio e "valor diferente")
+   3. `20261029100000_pagador_tipos_e_atendentes.sql` (nome do pagador, tipos e atendentes por setor). **A versão 0.4.0 do app precisa desta migração, e depois dela só a 0.4.0 (ou mais nova) consegue enviar pagamentos**: atualize o app em todos os PCs junto.
 3. **Desligar o cadastro aberto:** *Authentication → Sign In / Providers* → desmarque **Allow new users to sign up**. (Importante: senão qualquer pessoa com a chave pública poderia criar conta.)
 4. **Criar os 4 usuários de setor:** *Authentication → Users → Add user → Create new user*, marcando **Auto Confirm User**. Uma conta por setor, e a senha é a "senha do setor":
 
@@ -301,3 +303,7 @@ Antes de começar a mexer em qualquer PC: `git pull`. Ao terminar: `git add . &&
 3. Se dois do financeiro estiverem logados, o pop-up aparece para **ambos** e o primeiro clique resolve para todos? (protótipo: sim)
 4. Os arquivos pesquisados já existem em algum lugar (pasta de rede, Drive)? Isso define como indexar.
 5. Quer relatório/fechamento diário por setor e atendente?
+
+---
+
+Desenvolvido por **dev ribas**.

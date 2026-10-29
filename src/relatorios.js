@@ -1,5 +1,5 @@
 // Relatórios em CSV (ponto-e-vírgula, abre direto no Excel).
-import { SETORES, OPERADORES_CAIXA, TIPOS, STATUS, inicioDoDia, duracao, baixarCsv } from './store.js'
+import { SETORES, OPERADORES, TIPOS, STATUS, inicioDoDia, duracao, baixarCsv } from './store.js'
 
 const DIA = 86400000
 const num = (v) => v.toFixed(2).replace('.', ',')
@@ -32,16 +32,18 @@ export function baixarRelatorioDoDia(pagamentos, inicio = inicioDoDia()) {
     resumo('TOTAL', ativos),
     ['Cancelados (fora do total)', cancelados.length, '', '', '', '', num(soma(cancelados))],
     [],
-    ['Caixa por atendente', ...COLUNAS],
-    ...OPERADORES_CAIXA.map((o) => resumo(o, ativos.filter((p) => p.setor === 'caixa' && p.operador === o))),
-    [],
+    ...Object.entries(OPERADORES).flatMap(([setor, ops]) => [
+      [`${SETORES[setor]} por atendente`, ...COLUNAS],
+      ...ops.map((o) => resumo(o, ativos.filter((p) => p.setor === setor && p.operador === o))),
+      [],
+    ]),
     ['Resumo por tipo', ...COLUNAS],
     ...TIPOS.map((t) => resumo(t, ativos.filter((p) => p.tipo === t))),
     [],
     ['Detalhe dos pagamentos'],
-    ['Hora', 'Origem', 'Tipo', 'Valor informado (R$)', 'Valor no banco (R$)', 'Status', 'Conferido às', 'Tempo de conferência'],
+    ['Hora', 'Pagador', 'Origem', 'Tipo', 'Valor informado (R$)', 'Valor no banco (R$)', 'Status', 'Conferido às', 'Tempo de conferência'],
     ...dia.sort((a, b) => a.criadoEm - b.criadoEm).map((p) => [
-      hora(p.criadoEm), origem(p), p.tipo, num(p.valor), noBanco(p), STATUS[p.status].rotulo,
+      hora(p.criadoEm), p.pagador, origem(p), p.tipo, num(p.valor), noBanco(p), STATUS[p.status].rotulo,
       p.resolvidoEm ? hora(p.resolvidoEm) : '', tempo(p),
     ]),
   ]
@@ -52,14 +54,14 @@ export function baixarRelatorioDoDia(pagamentos, inicio = inicioDoDia()) {
 export function baixarMeusEnvios(meus, quem) {
   baixarCsv(
     `meus-envios-${iso(Date.now())}.csv`,
-    ['Hora', 'Tipo', 'Valor informado (R$)', 'Valor no banco (R$)', 'Status', 'Conferido às', 'Tempo de conferência'],
+    ['Hora', 'Pagador', 'Tipo', 'Valor informado (R$)', 'Valor no banco (R$)', 'Status', 'Conferido às', 'Tempo de conferência'],
     [
       ...[...meus].sort((a, b) => a.criadoEm - b.criadoEm).map((p) => [
-        hora(p.criadoEm), p.tipo, num(p.valor), noBanco(p), STATUS[p.status].rotulo,
+        hora(p.criadoEm), p.pagador, p.tipo, num(p.valor), noBanco(p), STATUS[p.status].rotulo,
         p.resolvidoEm ? hora(p.resolvidoEm) : '', tempo(p),
       ]),
       [],
-      ['', `Total (${quem}, sem cancelados)`, num(soma(meus.filter((p) => p.status !== 'cancelado')))],
+      ['', '', `Total (${quem}, sem cancelados)`, num(soma(meus.filter((p) => p.status !== 'cancelado')))],
     ],
   )
 }

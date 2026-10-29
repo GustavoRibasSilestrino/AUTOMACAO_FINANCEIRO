@@ -1,6 +1,6 @@
 import { useMemo, useState } from 'react'
 import Icon from '../components/Icon.jsx'
-import { StatusPill, Vazio } from '../components/ui.jsx'
+import { Avatar, StatusPill, Vazio } from '../components/ui.jsx'
 import { useAgora } from '../hooks.js'
 import { SETORES, STATUS, brl, dataHora, duracao, baixarCsv } from '../store.js'
 
@@ -20,20 +20,20 @@ export default function Historico({ pagamentos, resolver }) {
     const termo = q.trim().toLowerCase()
     return pagamentos
       .filter((p) => p.criadoEm >= desde && (!setor || p.setor === setor) && (!status || p.status === status))
-      .filter((p) => !termo || `${p.operador ?? ''} ${p.tipo} ${SETORES[p.setor]} ${brl(p.valor)} ${p.valor}`.toLowerCase().includes(termo))
+      .filter((p) => !termo || `${p.pagador} ${p.operador ?? ''} ${p.tipo} ${SETORES[p.setor]} ${brl(p.valor)} ${p.valor}`.toLowerCase().includes(termo))
       .sort((a, b) => b.criadoEm - a.criadoEm)
   }, [pagamentos, q, setor, status, periodo])
 
-  const total = lista.reduce((s, p) => s + p.valor, 0)
+  const total = lista.filter((p) => p.status !== 'cancelado').reduce((s, p) => s + p.valor, 0)
 
   const exportar = () =>
     baixarCsv(
       `pagamentos-${new Date().toISOString().slice(0, 10)}.csv`,
-      ['Data/hora', 'Setor', 'Atendente', 'Tipo', 'Valor', 'Status', 'Conferido em'],
+      ['Data/hora', 'Pagador', 'Setor', 'Atendente', 'Tipo', 'Valor informado (R$)', 'Valor no banco (R$)', 'Status', 'Conferido em'],
       lista.map((p) => [
-        new Date(p.criadoEm).toLocaleString('pt-BR'), SETORES[p.setor], p.operador ?? '', p.tipo,
-        p.valor.toFixed(2).replace('.', ','), STATUS[p.status].rotulo,
-        p.resolvidoEm ? new Date(p.resolvidoEm).toLocaleString('pt-BR') : '',
+        new Date(p.criadoEm).toLocaleString('pt-BR'), p.pagador, SETORES[p.setor], p.operador ?? '', p.tipo,
+        p.valor.toFixed(2).replace('.', ','), p.valorConferido == null ? '' : p.valorConferido.toFixed(2).replace('.', ','),
+        STATUS[p.status].rotulo, p.resolvidoEm ? new Date(p.resolvidoEm).toLocaleString('pt-BR') : '',
       ]),
     )
 
@@ -42,7 +42,8 @@ export default function Historico({ pagamentos, resolver }) {
       <div className="filtros">
         <label className="busca">
           <Icon nome="search" tam={16} />
-          <input value={q} onChange={(e) => setQ(e.target.value)} placeholder="Buscar por atendente, tipo ou valor…" />
+          <input value={q} onChange={(e) => setQ(e.target.value)} placeholder="Buscar por pagador, atendente, tipo ou valor…"
+            aria-label="Buscar pagamentos" />
         </label>
         <select className="input" value={setor} onChange={(e) => setSetor(e.target.value)} aria-label="Setor">
           <option value="">Todos os setores</option>
@@ -72,17 +73,29 @@ export default function Historico({ pagamentos, resolver }) {
         <div className="tabela-wrap">
           <table className="tabela">
             <thead>
-              <tr><th>Data/hora</th><th>Origem</th><th>Tipo</th><th className="num">Valor</th><th>Status</th><th>Tempo</th><th /></tr>
+              <tr>
+                <th>Pagador</th><th>Origem</th><th>Tipo</th><th className="num">Valor</th><th>Status</th><th>Quando</th><th />
+              </tr>
             </thead>
             <tbody>
               {lista.map((p) => (
-                <tr key={p.id}>
-                  <td>{dataHora(p.criadoEm)}</td>
-                  <td><span className="tag-setor">{SETORES[p.setor]}</span>{p.operador && <span className="operador"> {p.operador}</span>}</td>
-                  <td>{p.tipo}</td>
-                  <td className="num"><b>{brl(p.valor)}</b></td>
-                  <td><StatusPill status={p.status} /></td>
-                  <td className="mono">{duracao((p.resolvidoEm ?? agora) - p.criadoEm)}</td>
+                <tr key={p.id} className={p.status}>
+                  <td data-label="Pagador">
+                    <span className="celula-pagador"><Avatar nome={p.pagador} tam={32} /><strong>{p.pagador}</strong></span>
+                  </td>
+                  <td data-label="Origem">
+                    <span className="tag-setor">{SETORES[p.setor]}</span>{p.operador && <span className="operador">{p.operador}</span>}
+                  </td>
+                  <td data-label="Tipo">{p.tipo}</td>
+                  <td data-label="Valor" className="num">
+                    <b>{brl(p.valor)}</b>
+                    {p.status === 'divergente' && <small className="dif-info"> banco: {brl(p.valorConferido)}</small>}
+                  </td>
+                  <td data-label="Status"><StatusPill status={p.status} /></td>
+                  <td data-label="Quando" className="mono">
+                    {dataHora(p.criadoEm)}
+                    <small> · {duracao((p.resolvidoEm ?? agora) - p.criadoEm)}</small>
+                  </td>
                   <td className="acoes-td">
                     {p.status === 'pendente' && (
                       <div className="acoes">
