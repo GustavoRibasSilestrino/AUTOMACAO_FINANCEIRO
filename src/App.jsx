@@ -25,6 +25,9 @@ export default function App() {
     return aoEncerrarSessao(() => setSessao(null))
   }, [])
 
+  // Avisa o app de desktop quem está logado (define o que acontece ao fechar a janela)
+  useEffect(() => { window.desktop?.perfil(sessao?.setor ?? null) }, [sessao?.setor])
+
   const aoSair = async () => { await sair(); setSessao(null) }
   const trocarOperador = (op) => { salvarOperador(op); setSessao((s) => ({ ...s, operador: op })) }
 

@@ -55,8 +55,13 @@ RELATÓRIOS PARA BAIXAR (abrem no Excel)
   período).
 - Caixa e demais setores > "Baixar relatório": envios do dia.
 
+LOGIN
+- Ao fechar o programa, o login é encerrado: ao abrir de novo é preciso
+  entrar outra vez com o setor e a senha.
+
 FECHAR O PROGRAMA
-- O X da janela só esconde o programa perto do relógio (para o financeiro
+- Caixa, Cancelamento e Certidões: o X da janela fecha o programa de vez.
+- Financeiro: o X da janela só esconde o programa perto do relógio (para o financeiro
   continuar recebendo avisos). Para fechar de vez: clique com o botão
   direito no ícone perto do relógio > Sair.
 - No mesmo menu dá para ligar "Iniciar com o Windows" (recomendado no

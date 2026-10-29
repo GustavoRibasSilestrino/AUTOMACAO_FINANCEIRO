@@ -6,6 +6,7 @@ const DEV_URL = process.env.DEV_URL // ex.: http://localhost:5173 (npm run deskt
 let win = null
 let tray = null
 let saindo = false
+let manterNaBandeja = false // só o Financeiro fica rodando escondido (precisa receber avisos)
 
 // Só uma instância por computador (senão haveria dois pop-ups iguais)
 if (!app.requestSingleInstanceLock()) app.quit()
@@ -38,7 +39,7 @@ function criarJanela() {
 
   // Fechar a janela só esconde (o financeiro precisa continuar recebendo pop-ups)
   win.on('close', (e) => {
-    if (!saindo) { e.preventDefault(); win.hide() }
+    if (!saindo && manterNaBandeja) { e.preventDefault(); win.hide() }
   })
 }
 
@@ -62,6 +63,8 @@ function criarBandeja() {
 
 // Pagamento aguardando: notificação no canto da tela ou janela por cima (ver aviso.cjs)
 const aviso = criarAviso({ janela: () => win, mostrar })
+// O app avisa quem está logado: Financeiro fica na bandeja ao fechar; os demais setores encerram (e perdem o login)
+ipcMain.on('perfil', (_e, setor) => { manterNaBandeja = setor === 'financeiro' })
 ipcMain.on('alerta', (_e, dados) => aviso.ativar(dados))
 
 app.whenReady().then(() => {

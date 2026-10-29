@@ -33,19 +33,19 @@ export async function entrar({ setor, operador, senha }) {
     await supabase.auth.signOut()
     throw new Error('Usuário sem perfil de setor. Rode supabase/criar_perfis.sql.')
   }
-  if (setor !== 'financeiro') localStorage.setItem(KEY_OPERADOR, operador)
+  if (setor !== 'financeiro') sessionStorage.setItem(KEY_OPERADOR, operador)
   return { setor, operador: setor !== 'financeiro' ? operador : null }
 }
 
 export async function sair() {
   if (!REMOTO) return salvarSessao(null)
-  localStorage.removeItem(KEY_OPERADOR)
+  sessionStorage.removeItem(KEY_OPERADOR)
   await supabase.auth.signOut()
 }
 
 // Caixa: troca o atendente sem sair (o login do setor continua o mesmo)
 export function salvarOperador(op) {
-  if (REMOTO) localStorage.setItem(KEY_OPERADOR, op)
+  if (REMOTO) sessionStorage.setItem(KEY_OPERADOR, op)
   else salvarSessao({ ...lerSessao(), operador: op })
 }
 
@@ -55,7 +55,7 @@ export async function restaurarSessao() {
   const { data } = await supabase.auth.getSession()
   if (!data.session) return null
   const setor = await setorDoPerfil()
-  const operador = localStorage.getItem(KEY_OPERADOR)
+  const operador = sessionStorage.getItem(KEY_OPERADOR)
   const precisaAtendente = setor !== 'financeiro'
   if (!setor || (precisaAtendente && !OPERADORES[setor]?.includes(operador))) {
     await supabase.auth.signOut()

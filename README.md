@@ -6,13 +6,14 @@ Este documento serve para retomar o trabalho em **qualquer computador**.
 
 - **Código:** https://github.com/GustavoRibasSilestrino/AUTOMACAO_FINANCEIRO (público; nunca commitar o `.env`)
 - **Versão web:** https://automacao-financeiro.vercel.app (publica sozinha a cada envio para a `main`)
-- **Versão atual:** 0.4.0
+- **Versão atual:** 0.4.1
 
 ---
 
 ## 0. Onde paramos (28/10/2026)
 
 **Pronto e no ar**
+- **v0.4.1:** o **login não é mais lembrado**: ao fechar o app (ou a aba, na versão web) é preciso entrar de novo. No app de desktop, o X da janela **encerra** o programa nos setores Caixa, Cancelamento e Certidões; só o **Financeiro** continua rodando escondido perto do relógio (para receber avisos) e perde o login ao usar "Sair" no ícone da bandeja.
 - **v0.4.0 (29/10/2026):** nome do **pagador obrigatório** em todos os perfis; **tipos por setor** (Certidões só certidão, Cancelamento só taxa de cancelamento, Caixa os 4); **atendentes** Caixa = Biga, Particular, Renata / Cancelamento = Murilo, Luís / Certidões = Depósitos; aba **Arquivos** = um arquivo de pagamentos por dia, só do perfil (Caixa: do atendente; Cancelamento/Certidões: do setor; Financeiro: todos); soma por atendente; **visual novo** (menu recolhível, painel em blocos, gráficos, celular); assinatura **dev ribas**. Exige a migração 3 no Supabase.
 - App completo (React + Electron) com a identidade visual do Protesto Sorocaba, tema claro/escuro e responsivo.
 - Fluxo: setor informa o valor → financeiro é avisado (notificação no canto do Windows, repetida a cada minuto; pop-up dentro do app) → confirma, registra **valor diferente** ou marca **não localizado** → o setor vê o resultado na tela. O setor pode **cancelar** o envio enquanto aguarda.
