@@ -1,5 +1,6 @@
-import { useMemo } from 'react'
+import { useMemo, useState } from 'react'
 import Icon from '../components/Icon.jsx'
+import ValorDiferente from '../components/ValorDiferente.jsx'
 import { Kpi, Switch, Vazio } from '../components/ui.jsx'
 import { useAgora } from '../hooks.js'
 import { baixarRelatorioDoDia } from '../relatorios.js'
@@ -9,12 +10,14 @@ const SEGMENTOS = [
   { k: 'confirmado', rotulo: 'Confirmado', cls: 'ok' },
   { k: 'pendente', rotulo: 'Aguardando', cls: 'warn' },
   { k: 'nao_recebido', rotulo: 'Não localizado', cls: 'bad' },
+  { k: 'divergente', rotulo: 'Valor diferente', cls: 'dif' },
 ]
 const soma = (lista) => lista.reduce((s, p) => s + p.valor, 0)
 
 export default function Painel({ pagamentos, pendentes, resolver, cfg, setCfg, erro, irPara }) {
   const agora = useAgora()
   const minuto = Math.floor(agora / 60000)
+  const [difId, setDifId] = useState(null) // pagamento da fila com o formulário "valor diferente" aberto
 
   const hoje = useMemo(() => {
     const ini = inicioDoDia()
@@ -23,19 +26,21 @@ export default function Painel({ pagamentos, pendentes, resolver, cfg, setCfg, e
 
   const confirmados = hoje.filter((p) => p.status === 'confirmado')
   const naoLoc = hoje.filter((p) => p.status === 'nao_recebido')
-  const resolvidos = hoje.filter((p) => p.resolvidoEm)
+  const diferentes = hoje.filter((p) => p.status === 'divergente')
+  const ativos = hoje.filter((p) => p.status !== 'cancelado') // cancelados ficam fora dos totais
+  const resolvidos = ativos.filter((p) => p.resolvidoEm)
   const tempoMedio = resolvidos.length
     ? resolvidos.reduce((s, p) => s + (p.resolvidoEm - p.criadoEm), 0) / resolvidos.length : null
   const maisAntigo = pendentes[0]
 
   const porSetor = Object.keys(SETORES).map((k) => {
-    const doSetor = hoje.filter((p) => p.setor === k)
+    const doSetor = ativos.filter((p) => p.setor === k)
     const linha = { k, total: soma(doSetor), qtd: doSetor.length }
     for (const s of SEGMENTOS) linha[s.k] = soma(doSetor.filter((p) => p.status === s.k))
     return linha
   })
   const porTipo = TIPOS.map((t) => {
-    const l = hoje.filter((p) => p.tipo === t)
+    const l = ativos.filter((p) => p.tipo === t)
     return { t, total: soma(l), qtd: l.length }
   })
   const maxSetor = Math.max(1, ...porSetor.map((s) => s.total))
@@ -58,8 +63,10 @@ export default function Painel({ pagamentos, pendentes, resolver, cfg, setCfg, e
           sub={maisAntigo ? `mais antigo há ${duracao(agora - maisAntigo.criadoEm)}` : 'tudo conferido'} />
         <Kpi icone="checkCircle" tom="ok" rotulo="Confirmado hoje" valor={brl(soma(confirmados))}
           sub={`${confirmados.length} pagamento${confirmados.length === 1 ? '' : 's'}`} />
-        <Kpi icone="alert" tom="bad" rotulo="Não localizados hoje" valor={naoLoc.length}
-          sub={naoLoc.length ? brl(soma(naoLoc)) : 'nenhum'} />
+        <Kpi icone="alert" tom="bad" rotulo="Com problema hoje" valor={naoLoc.length + diferentes.length}
+          sub={naoLoc.length + diferentes.length
+            ? `${naoLoc.length} não localizado${naoLoc.length === 1 ? '' : 's'} · ${diferentes.length} diferente${diferentes.length === 1 ? '' : 's'}`
+            : 'nenhum'} />
         <Kpi icone="timer" rotulo="Tempo médio" valor={tempoMedio == null ? '—' : duracao(tempoMedio)}
           sub={`${resolvidos.length} conferido${resolvidos.length === 1 ? '' : 's'} hoje`} />
       </div>
@@ -90,14 +97,21 @@ export default function Painel({ pagamentos, pendentes, resolver, cfg, setCfg, e
                     </small>
                   </div>
                   <span className="cronometro"><Icon nome="clock" tam={14} /> {duracao(agora - p.criadoEm)}</span>
-                  <div className="acoes">
-                    <button className="btn sucesso sm" onClick={() => resolver(p.id, 'confirmado')}>
-                      <Icon nome="check" tam={16} /> Confirmar
-                    </button>
-                    <button className="btn perigo-suave sm" onClick={() => resolver(p.id, 'nao_recebido')}>
-                      Não recebido
-                    </button>
-                  </div>
+                  {difId === p.id ? (
+                    <div className="dif-wrap">
+                      <ValorDiferente p={p} resolver={resolver} aoVoltar={() => setDifId(null)} />
+                    </div>
+                  ) : (
+                    <div className="acoes">
+                      <button className="btn sucesso sm" onClick={() => resolver(p.id, 'confirmado')}>
+                        <Icon nome="check" tam={16} /> Confirmar
+                      </button>
+                      <button className="btn fantasma sm" onClick={() => setDifId(p.id)}>Valor diferente</button>
+                      <button className="btn perigo-suave sm" onClick={() => resolver(p.id, 'nao_recebido')}>
+                        Não recebido
+                      </button>
+                    </div>
+                  )}
                 </li>
               ))}
             </ul>
@@ -141,7 +155,7 @@ export default function Painel({ pagamentos, pendentes, resolver, cfg, setCfg, e
 
         <section className="card">
           <div className="card-head"><h2>Hoje por setor</h2></div>
-          {hoje.length === 0 ? <p className="dica">Sem movimento hoje.</p> : (
+          {ativos.length === 0 ? <p className="dica">Sem movimento hoje.</p> : (
             <>
               <div className="barras">
                 {porSetor.map((s) => (
@@ -167,7 +181,7 @@ export default function Painel({ pagamentos, pendentes, resolver, cfg, setCfg, e
 
         <section className="card">
           <div className="card-head"><h2>Hoje por tipo</h2></div>
-          {hoje.length === 0 ? <p className="dica">Sem movimento hoje.</p> : (
+          {ativos.length === 0 ? <p className="dica">Sem movimento hoje.</p> : (
             <div className="barras">
               {porTipo.map((s) => (
                 <div key={s.t} className="barra-linha">

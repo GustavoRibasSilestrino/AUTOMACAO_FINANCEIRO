@@ -1,0 +1,64 @@
+PAINEL DE PAGAMENTOS - PROTESTO SOROCABA  (versão {{versao}})
+============================================================
+
+COMO INSTALAR
+1. Extraia esta pasta ZIP (botão direito > Extrair tudo).
+2. Dê dois cliques em "Painel de Pagamentos Setup {{versao}}.exe".
+   - A instalação é automática, não precisa de administrador.
+   - Cria o atalho "Painel de Pagamentos" na Área de Trabalho.
+3. Se o Windows mostrar "O Windows protegeu o computador":
+   clique em "Mais informações" e depois em "Executar assim mesmo".
+   (Aparece porque o instalador ainda não tem assinatura digital paga.)
+4. É preciso estar conectado à internet para usar.
+
+PRIMEIRO ACESSO
+- Escolha o seu setor: Caixa, Cancelamento, Certidões ou Financeiro.
+- No Caixa, escolha também o atendente (Biga, Particular ou Renata).
+  Para trocar de atendente depois, use a caixa "Atendente" no menu da
+  esquerda (não precisa sair).
+- Digite a senha do setor (quem administra o sistema informa).
+
+COMO USAR
+- CAIXA / CANCELAMENTO / CERTIDÕES:
+  escolha o tipo de pagamento, digite o valor recebido e clique em
+  "Enviar ao financeiro". O resultado aparece na mesma tela quando o
+  financeiro conferir, com um aviso.
+  - Digitou o valor errado? Enquanto estiver "Aguardando", clique em
+    "Cancelar envio" e envie de novo. Depois que o financeiro conferiu,
+    não dá mais para cancelar: fale com o financeiro.
+  - Se o financeiro achar no banco um valor diferente do informado, o
+    status fica "Valor diferente" e mostra quanto ele encontrou.
+- FINANCEIRO:
+  quando chega um pagamento aparece um aviso no canto inferior direito
+  da tela (mesmo com outra janela aberta, como a do banco). Clique no
+  aviso, confira o valor no extrato do banco e escolha:
+    "Valor recebido"   - o valor entrou certo;
+    "Valor diferente"  - entrou outro valor: digite quanto entrou;
+    "Não localizei"    - não encontrou o valor.
+  O aviso se repete a cada 1 minuto enquanto houver pagamento aguardando.
+- Ctrl+K abre a pesquisa de arquivos em qualquer tela.
+
+RELATÓRIOS PARA BAIXAR (abrem no Excel)
+- Financeiro > Painel > "Relatório do dia": fechamento com totais por
+  setor, por atendente do caixa e por tipo, mais o detalhe de cada
+  pagamento. Pagamentos cancelados não entram nos totais.
+- Financeiro > Pagamentos > "Exportar CSV": lista filtrada (setor, status,
+  período).
+- Caixa e demais setores > "Baixar relatório": envios do dia.
+
+FECHAR O PROGRAMA
+- O X da janela só esconde o programa perto do relógio (para o financeiro
+  continuar recebendo avisos). Para fechar de vez: clique com o botão
+  direito no ícone perto do relógio > Sair.
+- No mesmo menu dá para ligar "Iniciar com o Windows" (recomendado no
+  computador do financeiro).
+
+SE O AVISO NÃO APARECER NO CANTO DA TELA
+- Windows: Configurações > Sistema > Notificações: deixe ligado.
+- Desligue o "Assistente de foco" / "Não incomodar".
+
+ATUALIZAR PARA UMA VERSÃO NOVA
+- Rode o novo instalador por cima do antigo. As configurações são mantidas.
+
+DESINSTALAR
+- Configurações do Windows > Aplicativos > Painel de Pagamentos > Desinstalar.

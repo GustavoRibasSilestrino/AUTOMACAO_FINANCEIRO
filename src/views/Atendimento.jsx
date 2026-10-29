@@ -14,7 +14,7 @@ const ICONE_TIPO = {
 }
 
 export default function Atendimento({ sessao, dados }) {
-  const { pagamentos, enviar, erro } = dados
+  const { pagamentos, enviar, resolver, erro } = dados
   const toast = useToast()
   const agora = useAgora()
   const [tipo, setTipo] = useState(TIPOS[0])
@@ -33,13 +33,13 @@ export default function Atendimento({ sessao, dados }) {
   const vistos = useRef(new Map())
   useEffect(() => {
     for (const p of meus) {
-      if (vistos.current.get(p.id) === 'pendente' && p.status !== 'pendente') {
-        toast(
-          p.status === 'confirmado'
-            ? `${brl(p.valor)} confirmado pelo financeiro.`
-            : `${brl(p.valor)} NÃO foi localizado no banco. Fale com o financeiro.`,
-          p.status === 'confirmado' ? 'ok' : 'bad',
-        )
+      if (vistos.current.get(p.id) === 'pendente' && p.status !== 'pendente' && p.status !== 'cancelado') {
+        const avisos = {
+          confirmado: [`${brl(p.valor)} confirmado pelo financeiro.`, 'ok'],
+          nao_recebido: [`${brl(p.valor)} NÃO foi localizado no banco. Fale com o financeiro.`, 'bad'],
+          divergente: [`O financeiro encontrou ${brl(p.valorConferido)} no banco, mas você informou ${brl(p.valor)}. Fale com o financeiro.`, 'bad'],
+        }
+        toast(...avisos[p.status])
       }
       vistos.current.set(p.id, p.status)
     }
@@ -61,8 +61,16 @@ export default function Atendimento({ sessao, dados }) {
     }
   }
 
-  const total = meus.reduce((s, p) => s + p.valor, 0)
-  const aguardando = meus.filter((p) => p.status === 'pendente').length
+  // Cancelar enquanto o financeiro ainda não conferiu (ex.: valor digitado errado)
+  const cancelar = async (p) => {
+    if (!window.confirm(`Cancelar o envio de ${brl(p.valor)} (${p.tipo})?`)) return
+    if (await resolver(p.id, 'cancelado')) toast(`Envio de ${brl(p.valor)} cancelado.`)
+    else toast('Não foi possível cancelar: o financeiro já conferiu este pagamento.', 'bad')
+  }
+
+  const ativos = meus.filter((p) => p.status !== 'cancelado') // cancelados ficam fora dos totais
+  const total = ativos.reduce((s, p) => s + p.valor, 0)
+  const aguardando = ativos.filter((p) => p.status === 'pendente').length
 
   return (
     <div className="duas-colunas">
@@ -108,7 +116,7 @@ export default function Atendimento({ sessao, dados }) {
           </button>
         </div>
         <div className="mini-stats">
-          <div><b>{meus.length}</b><span>enviados</span></div>
+          <div><b>{ativos.length}</b><span>enviados</span></div>
           <div><b>{brl(total)}</b><span>total informado</span></div>
           <div><b>{aguardando}</b><span>aguardando</span></div>
         </div>
@@ -130,8 +138,13 @@ export default function Atendimento({ sessao, dados }) {
                   <small>
                     {p.status === 'pendente'
                       ? `há ${duracao(agora - p.criadoEm)}`
-                      : `em ${duracao(p.resolvidoEm - p.criadoEm)}`}
+                      : p.status === 'cancelado' ? 'cancelado por você'
+                        : `em ${duracao(p.resolvidoEm - p.criadoEm)}`}
                   </small>
+                  {p.status === 'divergente' && <small className="dif-info">Banco: {brl(p.valorConferido)}</small>}
+                  {p.status === 'pendente' && (
+                    <button className="link-btn" onClick={() => cancelar(p)}>Cancelar envio</button>
+                  )}
                 </div>
               </li>
             ))}

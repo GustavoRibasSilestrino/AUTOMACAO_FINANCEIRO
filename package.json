@@ -1,7 +1,7 @@
 {
   "name": "painel-pagamentos",
   "private": true,
-  "version": "0.2.0",
+  "version": "0.3.0",
   "description": "Painel de Pagamentos - caixa e financeiro",
   "author": "Gustavo Ribas",
   "type": "module",
@@ -12,9 +12,12 @@
     "preview": "vite preview --host",
     "desktop": "vite build && electron .",
     "desktop:dev": "set DEV_URL=http://localhost:5173&& electron .",
-    "dist": "vite build && electron-builder --win"
+    "dist": "vite build && electron-builder --win",
+    "test": "node --import ./tests/setup.mjs --test \"tests/*.test.mjs\"",
+    "pacote": "npm run dist && node scripts/empacotar.mjs"
   },
   "devDependencies": {
+    "@electric-sql/pglite": "^0.5.13",
     "@supabase/supabase-js": "^2.118.0",
     "@vitejs/plugin-react": "^4.3.1",
     "electron": "^33.4.11",

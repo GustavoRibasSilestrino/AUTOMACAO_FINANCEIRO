@@ -1,5 +1,6 @@
-import { useEffect, useRef } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import Icon from './Icon.jsx'
+import ValorDiferente from './ValorDiferente.jsx'
 import Logo from './Logo.jsx'
 import { useAgora } from '../hooks.js'
 import { SETORES, brl, hora, duracao } from '../store.js'
@@ -8,6 +9,8 @@ import { SETORES, brl, hora, duracao } from '../store.js'
 export default function PopUp({ p, restantes, resolver, erro, estilo }) {
   const audioRef = useRef(null)
   const agora = useAgora()
+  const [dif, setDif] = useState(false) // formulário "valor diferente" aberto
+  useEffect(() => setDif(false), [p.id])
 
   useEffect(() => {
     const beep = () => {
@@ -72,14 +75,19 @@ export default function PopUp({ p, restantes, resolver, erro, estilo }) {
         <p className="popup-dica">Confira no extrato do banco se este valor entrou.</p>
         {erro && <p className="erro-msg"><Icon nome="alert" tam={16} /> {erro}</p>}
 
-        <div className="popup-acoes">
-          <button className="btn sucesso grande" onClick={() => resolver(p.id, 'confirmado')}>
-            <Icon nome="check" /> Valor recebido
-          </button>
-          <button className="btn perigo-suave grande" onClick={() => resolver(p.id, 'nao_recebido')}>
-            Não localizei
-          </button>
-        </div>
+        {dif ? (
+          <ValorDiferente p={p} resolver={resolver} aoVoltar={() => setDif(false)} />
+        ) : (
+          <div className="popup-acoes">
+            <button className="btn sucesso grande" onClick={() => resolver(p.id, 'confirmado')}>
+              <Icon nome="check" /> Valor recebido
+            </button>
+            <button className="btn fantasma grande" onClick={() => setDif(true)}>Valor diferente</button>
+            <button className="btn perigo-suave grande" onClick={() => resolver(p.id, 'nao_recebido')}>
+              Não localizei
+            </button>
+          </div>
+        )}
       </div>
     </div>
   )

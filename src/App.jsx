@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from 'react'
 import { useConfigFinanceiro, lerSessao } from './store.js'
 import {
-  REMOTO, sair, restaurarSessao, aoEncerrarSessao, usePagamentos,
+  REMOTO, sair, salvarOperador, restaurarSessao, aoEncerrarSessao, usePagamentos,
 } from './dados.js'
 import { useTema } from './hooks.js'
 import { ToastProvider } from './components/Toasts.jsx'
@@ -26,6 +26,7 @@ export default function App() {
   }, [])
 
   const aoSair = async () => { await sair(); setSessao(null) }
+  const trocarOperador = (op) => { salvarOperador(op); setSessao((s) => ({ ...s, operador: op })) }
 
   return (
     <ToastProvider>
@@ -34,7 +35,8 @@ export default function App() {
       ) : !sessao ? (
         <Login onEntrar={setSessao} tema={tema} alternarTema={alternarTema} />
       ) : (
-        <Aplicacao sessao={sessao} onSair={aoSair} tema={tema} alternarTema={alternarTema} />
+        <Aplicacao sessao={sessao} onSair={aoSair} onTrocarOperador={trocarOperador}
+          tema={tema} alternarTema={alternarTema} />
       )}
     </ToastProvider>
   )
@@ -42,7 +44,7 @@ export default function App() {
 
 const TITULOS = { painel: 'Painel', pagamentos: 'Pagamentos', arquivos: 'Pesquisa de arquivos' }
 
-function Aplicacao({ sessao, onSair, tema, alternarTema }) {
+function Aplicacao({ sessao, onSair, onTrocarOperador, tema, alternarTema }) {
   const financeiro = sessao.setor === 'financeiro'
   const dados = usePagamentos() // uma única conexão compartilhada por todas as telas
   const { pagamentos, resolver, erro } = dados
@@ -78,7 +80,7 @@ function Aplicacao({ sessao, onSair, tema, alternarTema }) {
     ]
 
   return (
-    <Shell sessao={sessao} nav={nav} tela={tela} onNav={setTela} onSair={onSair}
+    <Shell sessao={sessao} nav={nav} tela={tela} onNav={setTela} onSair={onSair} onTrocarOperador={onTrocarOperador}
       tema={tema} alternarTema={alternarTema} titulo={TITULOS[tela]}>
       {tela === 'painel' && financeiro && (
         <Painel pagamentos={pagamentos} pendentes={pendentes} resolver={resolver}

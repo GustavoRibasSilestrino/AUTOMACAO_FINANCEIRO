@@ -80,6 +80,8 @@ export const STATUS = {
   pendente: { rotulo: 'Aguardando', tom: 'warn' },
   confirmado: { rotulo: 'Confirmado', tom: 'ok' },
   nao_recebido: { rotulo: 'Não localizado', tom: 'bad' },
+  divergente: { rotulo: 'Valor diferente', tom: 'dif' },
+  cancelado: { rotulo: 'Cancelado', tom: 'mudo' },
 }
 
 export const inicioDoDia = () => {

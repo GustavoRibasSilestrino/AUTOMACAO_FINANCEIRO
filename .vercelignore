@@ -6,3 +6,6 @@ dist
 .git
 electron
 build
+dist-local
+tests
+scripts

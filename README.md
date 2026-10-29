@@ -33,6 +33,9 @@ Este documento serve para retomar o trabalho em **qualquer computador**.
 | Painel do financeiro | Feito: indicadores do dia, fila de conferência, gráficos por setor e por tipo |
 | Histórico com filtros e exportação | Feito: busca, setor, status, período (hoje/7 dias/tudo) e **CSV para Excel** |
 | Identidade visual Protesto Sorocaba | Feito: azul-marinho da logo, tema claro/escuro, responsivo |
+| Corrigir valor digitado errado | Feito: **"Cancelar envio"** enquanto aguarda; e **"Valor diferente"** no financeiro (registra o valor achado no banco; o setor é avisado) |
+| Trocar atendente no Caixa sem sair | Feito (caixa "Atendente" no menu lateral) |
+| Testes automáticos | `npm test`: 15 testes (regras do banco e relatórios) |
 | Pesquisa de arquivos | Feito com dados de exemplo (`src/arquivos.js`); atalho **Ctrl+K** em qualquer tela |
 | Aplicativo com ícone na área de trabalho (instalador `.exe`) | Feito — ver seção 3.1 |
 | Funcionar entre computadores diferentes | Código pronto (Supabase); falta criar o projeto e preencher o `.env` — ver seção 4 |
@@ -110,7 +113,7 @@ Não é preciso Vercel nem site: o `.exe` é copiado para uma pasta da rede e ca
 3. Em **Permissões**, remova "Todos" e adicione só as contas que vão instalar, com **Leitura**. Deixe **Controle total** apenas para quem atualiza o instalador.
 4. Anote o caminho de rede: `\\NOME-DO-PC\Instaladores` (o nome do PC está em *Configurações → Sistema → Sobre*).
 
-**ZIP pronto para levar:** `release\Painel-de-Pagamentos-X.Y.Z.zip` contém o instalador e um `LEIA-ME.txt` com as instruções para os usuários. Para refazer: gere o instalador (`npm run dist`), copie o `.exe` e o `LEIA-ME.txt` para uma pasta `Painel de Pagamentos X.Y.Z` e compacte (botão direito > Enviar para > Pasta compactada).
+**ZIP pronto para levar:** `release\Painel-de-Pagamentos-X.Y.Z.zip` contém o instalador e um `LEIA-ME.txt` com as instruções para os usuários. Para refazer instalador **e** ZIP de uma vez: `npm run pacote` (o texto do guia fica em `build/LEIA-ME.txt`).
 
 **Colocar/atualizar o instalador:**
 1. No PC de desenvolvimento, com o `.env` do Supabase já preenchido (seção 4): `npm run dist`.
@@ -133,7 +136,9 @@ Não é preciso Vercel nem site: o `.exe` é copiado para uma pasta da rede e ca
 O que falta é só **você criar o projeto no Supabase** (conta sua) e preencher as chaves:
 
 1. **Criar o projeto** em [supabase.com](https://supabase.com) (o plano gratuito basta para começar). Região sugerida: *South America (São Paulo)*. Guarde a senha do banco.
-2. **Criar as tabelas e regras:** *SQL Editor → New query* → cole todo o conteúdo de `supabase/migrations/20261028120000_painel_pagamentos.sql` → **Run**.
+2. **Criar as tabelas e regras:** *SQL Editor → New query* → cole o conteúdo de cada arquivo de `supabase/migrations/`, **na ordem**, rodando um de cada vez (**Run**):
+   1. `20261028120000_painel_pagamentos.sql` (tabelas, regras de acesso, tempo real)
+   2. `20261028180000_cancelar_e_valor_diferente.sql` (cancelar envio e "valor diferente"). **A versão 0.3.0 do app precisa desta migração**: sem ela, só esses dois botões dão erro; o resto funciona.
 3. **Desligar o cadastro aberto:** *Authentication → Sign In / Providers* → desmarque **Allow new users to sign up**. (Importante: senão qualquer pessoa com a chave pública poderia criar conta.)
 4. **Criar os 4 usuários de setor:** *Authentication → Users → Add user → Create new user*, marcando **Auto Confirm User**. Uma conta por setor, e a senha é a "senha do setor":
 
@@ -172,7 +177,7 @@ O que falta é só **você criar o projeto no Supabase** (conta sua) e preencher
 - Usuário sem perfil não enxerga nada. O visitante sem login não lê nada.
 
 ### O que foi e o que NÃO foi testado
-- ✅ O SQL (tabelas, regras, permissões) foi executado num Postgres em memória (PGlite) simulando o `auth.uid()` do Supabase: **29 testes de regras de acesso, todos passando** (isso achou e corrigiu um bug: pagamento do Caixa sem atendente passava).
+- ✅ O SQL (tabelas, regras, permissões) foi executado num Postgres em memória (PGlite) simulando o `auth.uid()` do Supabase: **9 testes de regras de acesso, todos passando** (rode com `npm test`). Esses testes já acharam e corrigiram 2 falhas antes de chegarem ao banco: pagamento do Caixa sem atendente passava, e uma política de "cancelar" que deixaria o caixa confirmar o próprio pagamento.
 - ✅ O app em modo local foi testado no navegador (login, envio, valor `1.234,56`, pop-up persistente, confirmação).
 - ⚠️ **Não testado contra um Supabase real:** login pelo Auth, tempo real (`postgres_changes`) e a configuração do projeto. O código segue a API oficial do `supabase-js`, mas rode o checklist acima antes de usar de verdade. Se algo falhar, a mensagem de erro aparece na tela.
 
@@ -194,7 +199,7 @@ O que falta é só **você criar o projeto no Supabase** (conta sua) e preencher
 - [ ] Senhas fortes nos 4 usuários e cadastro aberto **desligado** (passo 3).
 - [ ] Rodar o checklist de 2 computadores acima.
 - [ ] Backup: o plano gratuito do Supabase não tem backup automático; exporte periodicamente.
-- [ ] Decidir se "não recebido" deve avisar o caixa de volta (hoje só muda o status na lista dele).
+- [x] O setor que enviou é avisado na tela quando o financeiro confirma, não localiza ou acha valor diferente.
 - [ ] Apagar os 8 arquivos de exemplo quando indexar os reais.
 
 **Alternativa sem internet** (rede local apenas): um servidor Node + WebSocket em um PC da empresa, com o mesmo modelo de dados.

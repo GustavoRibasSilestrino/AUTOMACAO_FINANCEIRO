@@ -2,9 +2,9 @@ import { useEffect } from 'react'
 import Icon from './Icon.jsx'
 import Logo from './Logo.jsx'
 import { REMOTO } from '../dados.js'
-import { SETORES } from '../store.js'
+import { SETORES, OPERADORES_CAIXA } from '../store.js'
 
-export default function Shell({ sessao, nav, tela, onNav, onSair, tema, alternarTema, titulo, children }) {
+export default function Shell({ sessao, nav, tela, onNav, onSair, onTrocarOperador, tema, alternarTema, titulo, children }) {
   // Ctrl+K em qualquer tela abre a pesquisa de arquivos
   useEffect(() => {
     const tecla = (e) => {
@@ -45,6 +45,14 @@ export default function Shell({ sessao, nav, tela, onNav, onSair, tema, alternar
               <small>{papel}</small>
             </div>
           </div>
+          {sessao.setor === 'caixa' && (
+            <label className="troca-atendente">
+              <span>Atendente</span>
+              <select value={sessao.operador} onChange={(e) => onTrocarOperador(e.target.value)}>
+                {OPERADORES_CAIXA.map((o) => <option key={o}>{o}</option>)}
+              </select>
+            </label>
+          )}
           <div className="side-acoes">
             <span className={`conexao ${REMOTO ? 'on' : ''}`} title={REMOTO ? 'Conectado ao servidor' : 'Dados só neste computador'}>
               <i className="dot" />{REMOTO ? 'Online' : 'Modo local'}
